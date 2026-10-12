@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.reserve.ui.screens.splash.SplashScreen
 
 @Composable
 fun ReserveNavGraph(
@@ -22,7 +23,13 @@ fun ReserveNavGraph(
     ) {
         // Entry
         composable<ReserveRoute.Splash> {
-            PlaceholderScreen("Splash")
+            SplashScreen(
+                onSplashFinished = {
+                    navController.navigate(ReserveRoute.Login) {
+                        popUpTo(ReserveRoute.Splash) { inclusive = true }
+                    }
+                }
+            )
         }
 
         // Auth
