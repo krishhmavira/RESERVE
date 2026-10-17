@@ -23,6 +23,7 @@ import com.example.reserve.ui.screens.auth.AuthViewModel
 import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
+import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
 import com.example.reserve.ui.screens.profile.EditProfileScreen
 import com.example.reserve.ui.screens.profile.ProfileScreen
 import com.example.reserve.ui.screens.splash.SplashScreen
@@ -111,7 +112,21 @@ fun ReserveNavGraph(
 
         // Donor
         composable<ReserveRoute.DonorHome> {
-            PlaceholderScreen("Donor Home")
+            DonorHomeScreen(
+                onNavigateToAddDonation = {
+                    navController.navigate(ReserveRoute.AddDonation)
+                },
+                onNavigateToMyDonations = {
+                    navController.navigate(ReserveRoute.MyDonations)
+                },
+                onNavigateToDonationDetail = { donationId ->
+                    navController.navigate(ReserveRoute.DonationDetail(donationId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(ReserveRoute.Profile)
+                },
+                authViewModel = authViewModel
+            )
         }
         composable<ReserveRoute.AddDonation> {
             PlaceholderScreen("Add Donation")
