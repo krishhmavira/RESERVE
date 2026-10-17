@@ -1,12 +1,10 @@
 package com.example.reserve.ui.screens.donor.home
 
 import androidx.lifecycle.ViewModel
-import com.example.reserve.data.model.Donation
 import com.example.reserve.data.model.DonationStatus
+import com.example.reserve.data.repository.DonationRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +12,7 @@ import kotlinx.coroutines.flow.update
 
 class DonorHomeViewModel : ViewModel() {
 
-    private val firestore = FirebaseFirestore.getInstance()
+    private val donationRepository = DonationRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(DonorHomeUiState())
@@ -35,21 +33,9 @@ class DonorHomeViewModel : ViewModel() {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         listenerRegistration?.remove()
-        listenerRegistration = firestore.collection("donations")
-            .whereEqualTo("donorId", uid)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    _uiState.update {
-                        it.copy(isLoading = false, errorMessage = error.message)
-                    }
-                    return@addSnapshotListener
-                }
-
-                val donations = snapshot?.documents?.mapNotNull { doc ->
-                    doc.toObject(Donation::class.java)
-                } ?: emptyList()
-
+        listenerRegistration = donationRepository.listenToDonorDonations(
+            donorId = uid,
+            onUpdate = { donations ->
                 val active = donations.count { donation ->
                     donation.status == DonationStatus.AVAILABLE.name ||
                         donation.status == DonationStatus.REQUESTED.name ||
@@ -70,7 +56,13 @@ class DonorHomeViewModel : ViewModel() {
                         errorMessage = null
                     )
                 }
+            },
+            onError = { error ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = error.message)
+                }
             }
+        )
     }
 
     fun retry() {

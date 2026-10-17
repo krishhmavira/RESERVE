@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.FoodType
+import com.example.reserve.data.repository.DonationRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 
 class AddDonationViewModel : ViewModel() {
 
-    private val firestore = FirebaseFirestore.getInstance()
+    private val donationRepository = DonationRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(AddDonationUiState())
@@ -57,10 +57,8 @@ class AddDonationViewModel : ViewModel() {
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-        val docRef = firestore.collection("donations").document()
         val state = _uiState.value
         val donation = Donation(
-            donationId = docRef.id,
             donorId = uid,
             foodName = state.foodName.trim(),
             foodType = state.foodType!!.name,
@@ -73,15 +71,17 @@ class AddDonationViewModel : ViewModel() {
             createdAt = System.currentTimeMillis()
         )
 
-        docRef.set(donation)
-            .addOnSuccessListener {
+        donationRepository.createDonation(
+            donation = donation,
+            onSuccess = {
                 _uiState.update { it.copy(isLoading = false, isSuccess = true) }
-            }
-            .addOnFailureListener { exception ->
+            },
+            onFailure = { exception ->
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = exception.message ?: "Failed to create donation")
                 }
             }
+        )
     }
 
     private fun validate(): Boolean {
