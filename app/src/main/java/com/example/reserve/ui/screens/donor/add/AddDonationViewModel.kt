@@ -1,10 +1,12 @@
 package com.example.reserve.ui.screens.donor.add
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.FoodType
 import com.example.reserve.data.repository.DonationRepository
+import com.example.reserve.data.repository.StorageRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.update
 class AddDonationViewModel : ViewModel() {
 
     private val donationRepository = DonationRepository()
+    private val storageRepository = StorageRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(AddDonationUiState())
@@ -47,6 +50,10 @@ class AddDonationViewModel : ViewModel() {
         _uiState.update { it.copy(expiryTime = value, expiryTimeError = null, errorMessage = null) }
     }
 
+    fun updateImageUri(uri: Uri?) {
+        _uiState.update { it.copy(imageUri = uri, errorMessage = null) }
+    }
+
     fun submit() {
         if (!validate()) return
 
@@ -57,6 +64,31 @@ class AddDonationViewModel : ViewModel() {
 
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
+        val imageUri = _uiState.value.imageUri
+        if (imageUri != null) {
+            _uiState.update { it.copy(isUploadingImage = true) }
+            storageRepository.uploadDonationImage(
+                imageUri = imageUri,
+                onSuccess = { downloadUrl ->
+                    _uiState.update { it.copy(isUploadingImage = false) }
+                    createDonation(uid, downloadUrl)
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isUploadingImage = false,
+                            errorMessage = "Image upload failed: ${exception.message}"
+                        )
+                    }
+                }
+            )
+        } else {
+            createDonation(uid, "")
+        }
+    }
+
+    private fun createDonation(uid: String, imageUrl: String) {
         val state = _uiState.value
         val donation = Donation(
             donorId = uid,
@@ -67,6 +99,7 @@ class AddDonationViewModel : ViewModel() {
             pickupLocation = state.pickupLocation.trim(),
             preparedTime = state.preparedTime.trim(),
             expiryTime = state.expiryTime.trim(),
+            imageUrl = imageUrl,
             status = DonationStatus.AVAILABLE.name,
             createdAt = System.currentTimeMillis()
         )
