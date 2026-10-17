@@ -1,54 +1,45 @@
 package com.example.reserve.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.reserve.data.model.DonationStatus
 
 @Composable
 fun StatusBadge(
-    status: DonationStatus,
+    status: String,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = status.badgeBackgroundColor()
-    val textColor = status.badgeTextColor()
-    val borderColor = status.badgeBorderColor()
+    val (backgroundColor, textColor) = statusColors(status)
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .clip(RoundedCornerShape(50.dp))
-            .background(bgColor)
-            .border(1.dp, borderColor.copy(alpha = 0.5f), RoundedCornerShape(50.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.small,
+        color = backgroundColor
     ) {
-        Box(
-            modifier = Modifier
-                .size(6.dp)
-                .clip(CircleShape)
-                .background(textColor)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = status.displayName,
-            color = textColor,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold
+            text = status.replace("_", " "),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = textColor
         )
+    }
+}
+
+private fun statusColors(status: String): Pair<Color, Color> {
+    return when (status.uppercase()) {
+        "AVAILABLE" -> Color(0xFFD8F3DC) to Color(0xFF1B4332)
+        "PENDING" -> Color(0xFFFFF3CD) to Color(0xFF664D03)
+        "APPROVED" -> Color(0xFFD1ECF1) to Color(0xFF0C5460)
+        "REQUESTED" -> Color(0xFFE2E3F1) to Color(0xFF383D6E)
+        "COLLECTED" -> Color(0xFFB7E4C7) to Color(0xFF002114)
+        "COMPLETED" -> Color(0xFFD4EDDA) to Color(0xFF155724)
+        "REJECTED" -> Color(0xFFF8D7DA) to Color(0xFF721C24)
+        "EXPIRED" -> Color(0xFFE2E3DD) to Color(0xFF434840)
+        else -> Color(0xFFE2E3DD) to Color(0xFF434840)
     }
 }

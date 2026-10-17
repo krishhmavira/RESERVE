@@ -1,29 +1,19 @@
 package com.example.reserve.ui.components
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.reserve.ui.theme.ReserveCardBorder
-import com.example.reserve.ui.theme.ReserveSurfaceLight
 
 @Composable
 fun ReserveCard(
     modifier: Modifier = Modifier,
-    backgroundColor: Color = ReserveSurfaceLight,
-    borderColor: Color = ReserveCardBorder,
-    cornerRadius: Dp = 16.dp,
-    elevation: Dp = 1.dp,
-    contentPadding: Dp = 16.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -31,26 +21,28 @@ fun ReserveCard(
         Card(
             onClick = onClick,
             modifier = modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(cornerRadius),
-            colors = CardDefaults.cardColors(containerColor = backgroundColor),
-            border = BorderStroke(1.dp, borderColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = elevation)
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Column(
-                modifier = Modifier.padding(contentPadding),
+                modifier = Modifier.padding(16.dp),
                 content = content
             )
         }
     } else {
         Card(
             modifier = modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(cornerRadius),
-            colors = CardDefaults.cardColors(containerColor = backgroundColor),
-            border = BorderStroke(1.dp, borderColor),
-            elevation = CardDefaults.cardElevation(defaultElevation = elevation)
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Column(
-                modifier = Modifier.padding(contentPadding),
+                modifier = Modifier.padding(16.dp),
                 content = content
             )
         }
