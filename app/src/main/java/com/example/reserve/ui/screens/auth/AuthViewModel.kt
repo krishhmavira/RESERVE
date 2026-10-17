@@ -51,6 +51,7 @@ data class ForgotPasswordUiState(
 sealed interface AuthEvent {
     data object LoginSuccess : AuthEvent
     data object RegisterSuccess : AuthEvent
+    data object ProfileUpdateSuccess : AuthEvent
 }
 
 class AuthViewModel : ViewModel() {
@@ -295,6 +296,53 @@ class AuthViewModel : ViewModel() {
 
     fun clearForgotPasswordState() {
         _forgotPasswordState.update { ForgotPasswordUiState() }
+    }
+
+    // Profile
+
+    fun updateProfile(
+        name: String,
+        phone: String,
+        address: String,
+        onSuccess: () -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        val uid = auth.currentUser?.uid ?: run {
+            onFailure("Not authenticated")
+            return
+        }
+        val fields = mapOf(
+            "name" to name.trim(),
+            "phone" to phone.trim(),
+            "address" to address.trim()
+        )
+        userRepository.updateUserProfile(
+            userId = uid,
+            fields = fields,
+            onSuccess = {
+                _currentUser.update { user ->
+                    user?.copy(
+                        name = name.trim(),
+                        phone = phone.trim(),
+                        address = address.trim()
+                    )
+                }
+                viewModelScope.launch { _authEvent.emit(AuthEvent.ProfileUpdateSuccess) }
+                onSuccess()
+            },
+            onFailure = { exception ->
+                onFailure(exception.message ?: "Failed to update profile")
+            }
+        )
+    }
+
+    fun refreshCurrentUser() {
+        val uid = auth.currentUser?.uid ?: return
+        userRepository.getUserProfile(
+            userId = uid,
+            onSuccess = { user -> _currentUser.value = user },
+            onFailure = { }
+        )
     }
 
     // Logout

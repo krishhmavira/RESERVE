@@ -14,6 +14,8 @@ import androidx.navigation.toRoute
 import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
+import com.example.reserve.ui.screens.profile.EditProfileScreen
+import com.example.reserve.ui.screens.profile.ProfileScreen
 import com.example.reserve.ui.screens.splash.SplashScreen
 
 @Composable
@@ -105,10 +107,29 @@ fun ReserveNavGraph(
 
         // Shared
         composable<ReserveRoute.Profile> {
-            PlaceholderScreen("Profile")
+            ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToEditProfile = {
+                    navController.navigate(ReserveRoute.EditProfile)
+                },
+                onLogout = {
+                    navController.navigate(ReserveRoute.Login) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
         composable<ReserveRoute.EditProfile> {
-            PlaceholderScreen("Edit Profile")
+            EditProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onProfileSaved = {
+                    navController.popBackStack()
+                }
+            )
         }
     }
 }

@@ -31,4 +31,16 @@ class UserRepository {
             }
             .addOnFailureListener { onFailure(it) }
     }
+
+    fun updateUserProfile(
+        userId: String,
+        fields: Map<String, Any>,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        usersCollection.document(userId)
+            .update(fields)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }
