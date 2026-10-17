@@ -11,6 +11,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
+import com.example.reserve.ui.screens.auth.LoginScreen
+import com.example.reserve.ui.screens.auth.RegisterScreen
 import com.example.reserve.ui.screens.splash.SplashScreen
 
 @Composable
@@ -34,13 +37,40 @@ fun ReserveNavGraph(
 
         // Auth
         composable<ReserveRoute.Login> {
-            PlaceholderScreen("Login")
+            LoginScreen(
+                onLoginSuccess = {
+                    // Will route to DonorHome or NgoHome based on role in Commit 5
+                    navController.navigate(ReserveRoute.DonorHome) {
+                        popUpTo(ReserveRoute.Login) { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(ReserveRoute.Register)
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(ReserveRoute.ForgotPassword)
+                }
+            )
         }
         composable<ReserveRoute.Register> {
-            PlaceholderScreen("Register")
+            RegisterScreen(
+                onRegisterSuccess = {
+                    // Will route to DonorHome or NgoHome based on role in Commit 5
+                    navController.navigate(ReserveRoute.DonorHome) {
+                        popUpTo(ReserveRoute.Register) { inclusive = true }
+                    }
+                },
+                onNavigateToLogin = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.ForgotPassword> {
-            PlaceholderScreen("Forgot Password")
+            ForgotPasswordScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // Donor
