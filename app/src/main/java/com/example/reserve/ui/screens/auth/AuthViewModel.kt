@@ -1,10 +1,16 @@
 package com.example.reserve.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 data class LoginUiState(
     val email: String = "",
@@ -40,7 +46,14 @@ data class ForgotPasswordUiState(
     val isSuccess: Boolean = false
 )
 
+sealed interface AuthEvent {
+    data object LoginSuccess : AuthEvent
+    data object RegisterSuccess : AuthEvent
+}
+
 class AuthViewModel : ViewModel() {
+
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
     private val _loginState = MutableStateFlow(LoginUiState())
     val loginState: StateFlow<LoginUiState> = _loginState.asStateFlow()
@@ -50,6 +63,12 @@ class AuthViewModel : ViewModel() {
 
     private val _forgotPasswordState = MutableStateFlow(ForgotPasswordUiState())
     val forgotPasswordState: StateFlow<ForgotPasswordUiState> = _forgotPasswordState.asStateFlow()
+
+    private val _authEvent = MutableSharedFlow<AuthEvent>()
+    val authEvent: SharedFlow<AuthEvent> = _authEvent.asSharedFlow()
+
+    val currentUserId: String? get() = auth.currentUser?.uid
+    val isLoggedIn: Boolean get() = auth.currentUser != null
 
     // Login
 
@@ -84,7 +103,20 @@ class AuthViewModel : ViewModel() {
         if (hasError) return
 
         _loginState.update { it.copy(isLoading = true, errorMessage = null) }
-        // Firebase login will be added in Commit 2
+
+        auth.signInWithEmailAndPassword(state.email.trim(), state.password)
+            .addOnSuccessListener {
+                _loginState.update { it.copy(isLoading = false) }
+                viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+            }
+            .addOnFailureListener { exception ->
+                _loginState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = mapFirebaseError(exception)
+                    )
+                }
+            }
     }
 
     fun clearLoginError() {
@@ -163,7 +195,20 @@ class AuthViewModel : ViewModel() {
         if (hasError) return
 
         _registerState.update { it.copy(isLoading = true, errorMessage = null) }
-        // Firebase registration will be added in Commit 2
+
+        auth.createUserWithEmailAndPassword(state.email.trim(), state.password)
+            .addOnSuccessListener {
+                _registerState.update { it.copy(isLoading = false) }
+                viewModelScope.launch { _authEvent.emit(AuthEvent.RegisterSuccess) }
+            }
+            .addOnFailureListener { exception ->
+                _registerState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = mapFirebaseError(exception)
+                    )
+                }
+            }
     }
 
     fun clearRegisterError() {
@@ -189,14 +234,52 @@ class AuthViewModel : ViewModel() {
         }
 
         _forgotPasswordState.update { it.copy(isLoading = true, errorMessage = null) }
-        // Firebase password reset will be added in Commit 2
+
+        auth.sendPasswordResetEmail(state.email.trim())
+            .addOnSuccessListener {
+                _forgotPasswordState.update { it.copy(isLoading = false, isSuccess = true) }
+            }
+            .addOnFailureListener { exception ->
+                _forgotPasswordState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = mapFirebaseError(exception)
+                    )
+                }
+            }
     }
 
     fun clearForgotPasswordState() {
         _forgotPasswordState.update { ForgotPasswordUiState() }
     }
 
+    // Logout
+
+    fun logout() {
+        auth.signOut()
+    }
+
+    // Helpers
+
     private fun isValidEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun mapFirebaseError(exception: Exception): String {
+        return when {
+            exception.message?.contains("no user record", ignoreCase = true) == true ->
+                "No account found with this email"
+            exception.message?.contains("password is invalid", ignoreCase = true) == true ->
+                "Incorrect password"
+            exception.message?.contains("email address is badly formatted", ignoreCase = true) == true ->
+                "Invalid email format"
+            exception.message?.contains("email address is already in use", ignoreCase = true) == true ->
+                "An account with this email already exists"
+            exception.message?.contains("network error", ignoreCase = true) == true ->
+                "Network error. Please check your connection."
+            exception.message?.contains("too many unsuccessful", ignoreCase = true) == true ->
+                "Too many attempts. Please try again later."
+            else -> exception.message ?: "An unexpected error occurred"
+        }
     }
 }

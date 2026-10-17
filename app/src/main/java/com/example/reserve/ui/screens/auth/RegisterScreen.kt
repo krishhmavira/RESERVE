@@ -33,6 +33,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,6 +65,14 @@ fun RegisterScreen(
     val focusManager = LocalFocusManager.current
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        authViewModel.authEvent.collect { event ->
+            if (event is AuthEvent.RegisterSuccess) {
+                onRegisterSuccess()
+            }
+        }
+    }
 
     Box(
         modifier = Modifier
