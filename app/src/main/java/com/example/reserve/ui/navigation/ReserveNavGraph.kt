@@ -23,6 +23,7 @@ import com.example.reserve.ui.screens.auth.AuthViewModel
 import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
+import com.example.reserve.ui.screens.donor.add.AddDonationScreen
 import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
 import com.example.reserve.ui.screens.profile.EditProfileScreen
 import com.example.reserve.ui.screens.profile.ProfileScreen
@@ -129,7 +130,14 @@ fun ReserveNavGraph(
             )
         }
         composable<ReserveRoute.AddDonation> {
-            PlaceholderScreen("Add Donation")
+            AddDonationScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onDonationCreated = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.DonationDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<ReserveRoute.DonationDetail>()
