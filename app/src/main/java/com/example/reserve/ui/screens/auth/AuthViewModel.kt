@@ -54,6 +54,12 @@ sealed interface AuthEvent {
     data object ProfileUpdateSuccess : AuthEvent
 }
 
+sealed interface AuthCheckState {
+    data object Checking : AuthCheckState
+    data object NotAuthenticated : AuthCheckState
+    data class Authenticated(val role: String) : AuthCheckState
+}
+
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -61,6 +67,9 @@ class AuthViewModel : ViewModel() {
 
     private val _currentUser = MutableStateFlow<User?>(null)
     val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
+
+    private val _authCheckState = MutableStateFlow<AuthCheckState>(AuthCheckState.Checking)
+    val authCheckState: StateFlow<AuthCheckState> = _authCheckState.asStateFlow()
 
     private val _loginState = MutableStateFlow(LoginUiState())
     val loginState: StateFlow<LoginUiState> = _loginState.asStateFlow()
@@ -76,6 +85,34 @@ class AuthViewModel : ViewModel() {
 
     val currentUserId: String? get() = auth.currentUser?.uid
     val isLoggedIn: Boolean get() = auth.currentUser != null
+
+    fun checkAuthState() {
+        val firebaseUser = auth.currentUser
+        if (firebaseUser == null) {
+            _authCheckState.value = AuthCheckState.NotAuthenticated
+            return
+        }
+        _authCheckState.value = AuthCheckState.Checking
+        userRepository.getUserProfile(
+            userId = firebaseUser.uid,
+            onSuccess = { user ->
+                _currentUser.value = user
+                val role = user?.role ?: ""
+                _authCheckState.value = if (role.isNotBlank()) {
+                    AuthCheckState.Authenticated(role)
+                } else {
+                    auth.signOut()
+                    AuthCheckState.NotAuthenticated
+                }
+            },
+            onFailure = {
+                auth.signOut()
+                _authCheckState.value = AuthCheckState.NotAuthenticated
+            }
+        )
+    }
+
+    fun currentUserRole(): String = _currentUser.value?.role ?: ""
 
     // Login
 
@@ -350,6 +387,7 @@ class AuthViewModel : ViewModel() {
     fun logout() {
         auth.signOut()
         _currentUser.value = null
+        _authCheckState.value = AuthCheckState.NotAuthenticated
     }
 
     // Helpers

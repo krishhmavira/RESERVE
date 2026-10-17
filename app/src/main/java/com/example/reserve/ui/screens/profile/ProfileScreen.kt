@@ -202,10 +202,7 @@ fun ProfileScreen(
 
                 ReserveOutlinedButton(
                     text = "Log Out",
-                    onClick = {
-                        authViewModel.logout()
-                        onLogout()
-                    }
+                    onClick = onLogout
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
