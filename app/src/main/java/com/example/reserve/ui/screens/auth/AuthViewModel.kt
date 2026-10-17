@@ -2,6 +2,8 @@ package com.example.reserve.ui.screens.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.reserve.data.model.User
+import com.example.reserve.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +56,10 @@ sealed interface AuthEvent {
 class AuthViewModel : ViewModel() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val userRepository = UserRepository()
+
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     private val _loginState = MutableStateFlow(LoginUiState())
     val loginState: StateFlow<LoginUiState> = _loginState.asStateFlow()
@@ -105,9 +111,25 @@ class AuthViewModel : ViewModel() {
         _loginState.update { it.copy(isLoading = true, errorMessage = null) }
 
         auth.signInWithEmailAndPassword(state.email.trim(), state.password)
-            .addOnSuccessListener {
-                _loginState.update { it.copy(isLoading = false) }
-                viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+            .addOnSuccessListener { result ->
+                val uid = result.user?.uid
+                if (uid != null) {
+                    userRepository.getUserProfile(
+                        userId = uid,
+                        onSuccess = { user ->
+                            _currentUser.value = user
+                            _loginState.update { it.copy(isLoading = false) }
+                            viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                        },
+                        onFailure = {
+                            _loginState.update { it.copy(isLoading = false) }
+                            viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                        }
+                    )
+                } else {
+                    _loginState.update { it.copy(isLoading = false) }
+                    viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                }
             }
             .addOnFailureListener { exception ->
                 _loginState.update {
@@ -197,9 +219,31 @@ class AuthViewModel : ViewModel() {
         _registerState.update { it.copy(isLoading = true, errorMessage = null) }
 
         auth.createUserWithEmailAndPassword(state.email.trim(), state.password)
-            .addOnSuccessListener {
-                _registerState.update { it.copy(isLoading = false) }
-                viewModelScope.launch { _authEvent.emit(AuthEvent.RegisterSuccess) }
+            .addOnSuccessListener { result ->
+                val uid = result.user?.uid ?: return@addOnSuccessListener
+                val user = User(
+                    userId = uid,
+                    name = state.name.trim(),
+                    email = state.email.trim(),
+                    phone = state.phone.trim(),
+                    role = state.selectedRole
+                )
+                userRepository.createUserProfile(
+                    user = user,
+                    onSuccess = {
+                        _currentUser.value = user
+                        _registerState.update { it.copy(isLoading = false) }
+                        viewModelScope.launch { _authEvent.emit(AuthEvent.RegisterSuccess) }
+                    },
+                    onFailure = { exception ->
+                        _registerState.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = "Account created but profile setup failed. Please try logging in."
+                            )
+                        }
+                    }
+                )
             }
             .addOnFailureListener { exception ->
                 _registerState.update {
@@ -257,6 +301,7 @@ class AuthViewModel : ViewModel() {
 
     fun logout() {
         auth.signOut()
+        _currentUser.value = null
     }
 
     // Helpers
