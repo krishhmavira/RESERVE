@@ -24,6 +24,8 @@ import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
 import com.example.reserve.ui.screens.donor.add.AddDonationScreen
+import com.example.reserve.ui.screens.ngo.browse.BrowseFoodScreen
+import com.example.reserve.ui.screens.ngo.home.NgoHomeScreen
 import com.example.reserve.ui.screens.donor.detail.DonationDetailScreen
 import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
 import com.example.reserve.ui.screens.donor.mydonations.MyDonationsScreen
@@ -163,10 +165,31 @@ fun ReserveNavGraph(
 
         // NGO
         composable<ReserveRoute.NgoHome> {
-            PlaceholderScreen("NGO Home")
+            NgoHomeScreen(
+                onNavigateToBrowseFood = {
+                    navController.navigate(ReserveRoute.BrowseFood)
+                },
+                onNavigateToMyRequests = {
+                    navController.navigate(ReserveRoute.MyRequests)
+                },
+                onNavigateToFoodDetail = { donationId ->
+                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(ReserveRoute.Profile)
+                },
+                authViewModel = authViewModel
+            )
         }
         composable<ReserveRoute.BrowseFood> {
-            PlaceholderScreen("Browse Food")
+            BrowseFoodScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToFoodDetail = { donationId ->
+                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                }
+            )
         }
         composable<ReserveRoute.FoodDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<ReserveRoute.FoodDetail>()
