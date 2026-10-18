@@ -25,6 +25,7 @@ import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
 import com.example.reserve.ui.screens.donor.add.AddDonationScreen
 import com.example.reserve.ui.screens.ngo.browse.BrowseFoodScreen
+import com.example.reserve.ui.screens.ngo.fooddetail.FoodDetailScreen
 import com.example.reserve.ui.screens.ngo.home.NgoHomeScreen
 import com.example.reserve.ui.screens.donor.detail.DonationDetailScreen
 import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
@@ -193,7 +194,15 @@ fun ReserveNavGraph(
         }
         composable<ReserveRoute.FoodDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<ReserveRoute.FoodDetail>()
-            PlaceholderScreen("Food Detail: ${detail.donationId}")
+            FoodDetailScreen(
+                donationId = detail.donationId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onRequestSuccess = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.MyRequests> {
             PlaceholderScreen("My Requests")
