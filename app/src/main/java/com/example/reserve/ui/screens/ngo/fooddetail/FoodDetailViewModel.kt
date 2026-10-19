@@ -6,7 +6,9 @@ import com.example.reserve.data.model.FoodRequest
 import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.data.repository.DonationRepository
 import com.example.reserve.data.repository.FoodRequestRepository
+import com.example.reserve.data.util.FirebaseHelper
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,16 +23,22 @@ class FoodDetailViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(FoodDetailUiState())
     val uiState: StateFlow<FoodDetailUiState> = _uiState.asStateFlow()
 
+    private var donationListener: ListenerRegistration? = null
+
     fun loadDonation(donationId: String) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        donationRepository.getDonation(
+
+        donationListener?.remove()
+        donationListener = donationRepository.listenToDonation(
             donationId = donationId,
-            onSuccess = { donation ->
-                _uiState.update { it.copy(isLoading = false, donation = donation) }
+            onUpdate = { donation ->
+                _uiState.update { it.copy(isLoading = false, donation = donation, errorMessage = null) }
                 if (donation != null) checkExistingRequest(donationId)
             },
-            onFailure = { exception ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = exception.message) }
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(exception))
+                }
             }
         )
     }
@@ -80,19 +88,20 @@ class FoodDetailViewModel : ViewModel() {
                             it.copy(
                                 isRequesting = false,
                                 requestSuccess = true,
-                                alreadyRequested = true,
-                                donation = it.donation?.copy(status = DonationStatus.REQUESTED.name)
+                                alreadyRequested = true
                             )
                         }
                     },
                     onFailure = {
-                        _uiState.update { it.copy(isRequesting = false, requestSuccess = true, alreadyRequested = true) }
+                        _uiState.update {
+                            it.copy(isRequesting = false, requestSuccess = true, alreadyRequested = true)
+                        }
                     }
                 )
             },
             onFailure = { exception ->
                 _uiState.update {
-                    it.copy(isRequesting = false, requestError = exception.message ?: "Failed to request")
+                    it.copy(isRequesting = false, requestError = FirebaseHelper.mapFirebaseError(exception))
                 }
             }
         )
@@ -100,5 +109,10 @@ class FoodDetailViewModel : ViewModel() {
 
     fun clearRequestError() {
         _uiState.update { it.copy(requestError = null) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        donationListener?.remove()
     }
 }
