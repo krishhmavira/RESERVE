@@ -90,4 +90,73 @@ class FoodRequestRepository {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
+
+    fun listenToRequest(
+        requestId: String,
+        onUpdate: (FoodRequest?) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return requestsCollection.document(requestId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                onUpdate(snapshot?.toObject(FoodRequest::class.java))
+            }
+    }
+
+    fun listenToRequestsForDonation(
+        donationId: String,
+        onUpdate: (List<FoodRequest>) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return requestsCollection
+            .whereEqualTo("donationId", donationId)
+            .orderBy("requestTime", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                val requests = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(FoodRequest::class.java)
+                } ?: emptyList()
+                onUpdate(requests)
+            }
+    }
+
+    fun approveRequest(
+        requestId: String,
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val batch = firestore.batch()
+        batch.update(requestsCollection.document(requestId), "status", "APPROVED")
+        batch.update(
+            firestore.collection("donations").document(donationId),
+            "status", "APPROVED"
+        )
+        batch.commit()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun rejectRequest(
+        requestId: String,
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val batch = firestore.batch()
+        batch.update(requestsCollection.document(requestId), "status", "REJECTED")
+        batch.update(
+            firestore.collection("donations").document(donationId),
+            "status", "AVAILABLE"
+        )
+        batch.commit()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
 }

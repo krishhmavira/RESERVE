@@ -75,6 +75,40 @@ class DonationRepository {
             .addOnFailureListener { onFailure(it) }
     }
 
+    fun listenToDonation(
+        donationId: String,
+        onUpdate: (Donation?) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return donationsCollection.document(donationId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                onUpdate(snapshot?.toObject(Donation::class.java))
+            }
+    }
+
+    fun listenToAvailableDonations(
+        onUpdate: (List<Donation>) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return donationsCollection
+            .whereEqualTo("status", "AVAILABLE")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                val donations = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Donation::class.java)
+                } ?: emptyList()
+                onUpdate(donations)
+            }
+    }
+
     fun updateDonationField(
         donationId: String,
         fields: Map<String, Any>,
