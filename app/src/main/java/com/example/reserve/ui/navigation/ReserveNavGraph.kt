@@ -1,8 +1,5 @@
 package com.example.reserve.ui.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -10,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -24,6 +20,11 @@ import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
 import com.example.reserve.ui.screens.donor.add.AddDonationScreen
+import com.example.reserve.ui.screens.ngo.browse.BrowseFoodScreen
+import com.example.reserve.ui.screens.ngo.fooddetail.FoodDetailScreen
+import com.example.reserve.ui.screens.ngo.home.NgoHomeScreen
+import com.example.reserve.ui.screens.ngo.myrequests.MyRequestsScreen
+import com.example.reserve.ui.screens.ngo.requestdetail.RequestDetailScreen
 import com.example.reserve.ui.screens.donor.detail.DonationDetailScreen
 import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
 import com.example.reserve.ui.screens.donor.mydonations.MyDonationsScreen
@@ -163,17 +164,62 @@ fun ReserveNavGraph(
 
         // NGO
         composable<ReserveRoute.NgoHome> {
-            PlaceholderScreen("NGO Home")
+            NgoHomeScreen(
+                onNavigateToBrowseFood = {
+                    navController.navigate(ReserveRoute.BrowseFood)
+                },
+                onNavigateToMyRequests = {
+                    navController.navigate(ReserveRoute.MyRequests)
+                },
+                onNavigateToFoodDetail = { donationId ->
+                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(ReserveRoute.Profile)
+                },
+                authViewModel = authViewModel
+            )
         }
         composable<ReserveRoute.BrowseFood> {
-            PlaceholderScreen("Browse Food")
+            BrowseFoodScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToFoodDetail = { donationId ->
+                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                }
+            )
         }
         composable<ReserveRoute.FoodDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<ReserveRoute.FoodDetail>()
-            PlaceholderScreen("Food Detail: ${detail.donationId}")
+            FoodDetailScreen(
+                donationId = detail.donationId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onRequestSuccess = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.MyRequests> {
-            PlaceholderScreen("My Requests")
+            MyRequestsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToRequestDetail = { requestId ->
+                    navController.navigate(ReserveRoute.RequestDetail(requestId))
+                }
+            )
+        }
+        composable<ReserveRoute.RequestDetail> { backStackEntry ->
+            val detail = backStackEntry.toRoute<ReserveRoute.RequestDetail>()
+            RequestDetailScreen(
+                requestId = detail.requestId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // Shared
@@ -215,12 +261,3 @@ private fun roleHomeRoute(role: String): ReserveRoute {
     }
 }
 
-@Composable
-private fun PlaceholderScreen(name: String) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(text = name)
-    }
-}

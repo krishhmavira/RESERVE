@@ -23,6 +23,7 @@ sealed interface ReserveRoute {
     @Serializable data object BrowseFood : ReserveRoute
     @Serializable data class FoodDetail(val donationId: String) : ReserveRoute
     @Serializable data object MyRequests : ReserveRoute
+    @Serializable data class RequestDetail(val requestId: String) : ReserveRoute
 
     // Shared
     @Serializable data object Profile : ReserveRoute
