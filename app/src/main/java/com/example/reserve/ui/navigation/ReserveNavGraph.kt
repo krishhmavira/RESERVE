@@ -23,6 +23,10 @@ import com.example.reserve.ui.screens.auth.AuthViewModel
 import com.example.reserve.ui.screens.auth.ForgotPasswordScreen
 import com.example.reserve.ui.screens.auth.LoginScreen
 import com.example.reserve.ui.screens.auth.RegisterScreen
+import com.example.reserve.ui.screens.donor.add.AddDonationScreen
+import com.example.reserve.ui.screens.donor.detail.DonationDetailScreen
+import com.example.reserve.ui.screens.donor.home.DonorHomeScreen
+import com.example.reserve.ui.screens.donor.mydonations.MyDonationsScreen
 import com.example.reserve.ui.screens.profile.EditProfileScreen
 import com.example.reserve.ui.screens.profile.ProfileScreen
 import com.example.reserve.ui.screens.splash.SplashScreen
@@ -111,17 +115,50 @@ fun ReserveNavGraph(
 
         // Donor
         composable<ReserveRoute.DonorHome> {
-            PlaceholderScreen("Donor Home")
+            DonorHomeScreen(
+                onNavigateToAddDonation = {
+                    navController.navigate(ReserveRoute.AddDonation)
+                },
+                onNavigateToMyDonations = {
+                    navController.navigate(ReserveRoute.MyDonations)
+                },
+                onNavigateToDonationDetail = { donationId ->
+                    navController.navigate(ReserveRoute.DonationDetail(donationId))
+                },
+                onNavigateToProfile = {
+                    navController.navigate(ReserveRoute.Profile)
+                },
+                authViewModel = authViewModel
+            )
         }
         composable<ReserveRoute.AddDonation> {
-            PlaceholderScreen("Add Donation")
+            AddDonationScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onDonationCreated = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.DonationDetail> { backStackEntry ->
             val detail = backStackEntry.toRoute<ReserveRoute.DonationDetail>()
-            PlaceholderScreen("Donation Detail: ${detail.donationId}")
+            DonationDetailScreen(
+                donationId = detail.donationId,
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
         composable<ReserveRoute.MyDonations> {
-            PlaceholderScreen("My Donations")
+            MyDonationsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToDonationDetail = { donationId ->
+                    navController.navigate(ReserveRoute.DonationDetail(donationId))
+                }
+            )
         }
 
         // NGO
