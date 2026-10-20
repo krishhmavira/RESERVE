@@ -1,6 +1,8 @@
 package com.example.reserve.ui.screens.ngo.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -39,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.ui.components.EmptyStateView
@@ -81,8 +84,10 @@ fun NgoHomeScreen(
                 title = {
                     Text(
                         text = "RESERVE",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        ),
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
@@ -164,7 +169,7 @@ fun NgoHomeScreen(
                             Text(
                                 text = "Available Now",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                             if (uiState.recentAvailable.isNotEmpty()) {
                                 TextButton(onClick = onNavigateToBrowseFood) {
@@ -205,7 +210,7 @@ private fun GreetingSection(userName: String) {
     Column {
         Text(
             text = if (userName.isNotBlank()) "Hello, ${userName.split(" ").first()}!" else "Hello!",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -224,27 +229,56 @@ private fun StatsRow(available: Int, requests: Int, approved: Int) {
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard(label = "Available", value = available.toString(), modifier = Modifier.weight(1f))
-        StatCard(label = "Requests", value = requests.toString(), modifier = Modifier.weight(1f))
-        StatCard(label = "Approved", value = approved.toString(), modifier = Modifier.weight(1f))
+        StatCard(
+            label = "Available",
+            value = available.toString(),
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            textColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            valueColor = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            label = "Requests",
+            value = requests.toString(),
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            valueColor = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.weight(1f)
+        )
+        StatCard(
+            label = "Approved",
+            value = approved.toString(),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            valueColor = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
 @Composable
-private fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
-    ReserveCard(modifier = modifier) {
+private fun StatCard(
+    label: String,
+    value: String,
+    containerColor: androidx.compose.ui.graphics.Color,
+    textColor: androidx.compose.ui.graphics.Color,
+    valueColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    ReserveCard(modifier = modifier, containerColor = containerColor) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = valueColor
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = textColor
             )
         }
     }
@@ -260,12 +294,22 @@ private fun ActionCard(
 ) {
     ReserveCard(onClick = onClick, modifier = modifier) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer,
+                        MaterialTheme.shapes.medium
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
@@ -292,12 +336,22 @@ private fun AvailableDonationCard(donation: Donation, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top
         ) {
             Row(modifier = Modifier.weight(1f)) {
-                Icon(
-                    imageVector = Icons.Outlined.Fastfood,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.tertiaryContainer,
+                            MaterialTheme.shapes.medium
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Fastfood,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.tertiary
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(

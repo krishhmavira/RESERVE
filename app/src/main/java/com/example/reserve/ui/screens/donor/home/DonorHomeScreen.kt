@@ -1,6 +1,8 @@
 package com.example.reserve.ui.screens.donor.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,7 +18,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Fastfood
-import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.ui.components.EmptyStateView
@@ -45,6 +47,7 @@ import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.StatusBadge
+import com.example.reserve.ui.components.formatTimestamp
 import com.example.reserve.ui.screens.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,8 +75,10 @@ fun DonorHomeScreen(
                 title = {
                     Text(
                         text = "RESERVE",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        ),
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
@@ -94,7 +99,8 @@ fun DonorHomeScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onNavigateToAddDonation,
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary,
+                shape = MaterialTheme.shapes.large
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -144,7 +150,7 @@ fun DonorHomeScreen(
                             Text(
                                 text = "Recent Donations",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.Bold
                             )
                             if (uiState.recentDonations.isNotEmpty()) {
                                 TextButton(onClick = onNavigateToMyDonations) {
@@ -185,7 +191,7 @@ private fun GreetingSection(userName: String) {
     Column {
         Text(
             text = if (userName.isNotBlank()) "Hello, ${userName.split(" ").first()}!" else "Hello!",
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -207,36 +213,53 @@ private fun StatsRow(total: Int, active: Int, completed: Int) {
         StatCard(
             label = "Total",
             value = total.toString(),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            valueColor = MaterialTheme.colorScheme.primary,
             modifier = Modifier.weight(1f)
         )
         StatCard(
             label = "Active",
             value = active.toString(),
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            valueColor = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.weight(1f)
         )
         StatCard(
             label = "Completed",
             value = completed.toString(),
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            textColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            valueColor = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.weight(1f)
         )
     }
 }
 
 @Composable
-private fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
-    ReserveCard(modifier = modifier) {
+private fun StatCard(
+    label: String,
+    value: String,
+    containerColor: androidx.compose.ui.graphics.Color,
+    textColor: androidx.compose.ui.graphics.Color,
+    valueColor: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    ReserveCard(modifier = modifier, containerColor = containerColor) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = valueColor
             )
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+                color = textColor
             )
         }
     }
@@ -251,12 +274,22 @@ private fun DonationListItem(donation: Donation, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top
         ) {
             Row(modifier = Modifier.weight(1f)) {
-                Icon(
-                    imageVector = Icons.Outlined.Fastfood,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.shapes.medium
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Fastfood,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
@@ -282,6 +315,12 @@ private fun DonationListItem(donation: Donation, onClick: () -> Unit) {
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatTimestamp(donation.createdAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
                 }
             }
             StatusBadge(status = donation.status)

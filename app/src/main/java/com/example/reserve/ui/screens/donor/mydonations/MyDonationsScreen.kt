@@ -1,6 +1,8 @@
 package com.example.reserve.ui.screens.donor.mydonations
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -54,7 +56,6 @@ fun MyDonationsScreen(
     myDonationsViewModel: MyDonationsViewModel = viewModel()
 ) {
     val uiState by myDonationsViewModel.uiState.collectAsState()
-
     val filters = listOf("ALL") + DonationStatus.entries.map { it.name }
 
     Scaffold(
@@ -63,10 +64,7 @@ fun MyDonationsScreen(
                 title = { Text("My Donations") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -89,9 +87,7 @@ fun MyDonationsScreen(
                     FilterChip(
                         selected = uiState.selectedFilter == filter,
                         onClick = { myDonationsViewModel.setFilter(filter) },
-                        label = {
-                            Text(filter.replace("_", " "))
-                        },
+                        label = { Text(filter.replace("_", " ")) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                             selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
@@ -101,39 +97,31 @@ fun MyDonationsScreen(
             }
 
             when {
-                uiState.isLoading -> {
-                    LoadingView()
-                }
-                uiState.errorMessage != null -> {
-                    ErrorStateView(
-                        message = uiState.errorMessage!!,
-                        onRetry = { myDonationsViewModel.retry() }
-                    )
-                }
-                uiState.filteredDonations.isEmpty() -> {
-                    EmptyStateView(
-                        title = "No donations found",
-                        message = if (uiState.selectedFilter == "ALL")
-                            "You haven't made any donations yet"
-                        else
-                            "No ${uiState.selectedFilter.replace("_", " ").lowercase()} donations",
-                        icon = Icons.Outlined.VolunteerActivism
-                    )
-                }
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(
-                            items = uiState.filteredDonations,
-                            key = { it.donationId }
-                        ) { donation ->
-                            DonationCard(
-                                donation = donation,
-                                onClick = { onNavigateToDonationDetail(donation.donationId) }
-                            )
-                        }
+                uiState.isLoading -> LoadingView()
+                uiState.errorMessage != null -> ErrorStateView(
+                    message = uiState.errorMessage!!,
+                    onRetry = { myDonationsViewModel.retry() }
+                )
+                uiState.filteredDonations.isEmpty() -> EmptyStateView(
+                    title = "No donations found",
+                    message = if (uiState.selectedFilter == "ALL")
+                        "You haven't made any donations yet"
+                    else
+                        "No ${uiState.selectedFilter.replace("_", " ").lowercase()} donations",
+                    icon = Icons.Outlined.VolunteerActivism
+                )
+                else -> LazyColumn(
+                    contentPadding = PaddingValues(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(
+                        items = uiState.filteredDonations,
+                        key = { it.donationId }
+                    ) { donation ->
+                        DonationCard(
+                            donation = donation,
+                            onClick = { onNavigateToDonationDetail(donation.donationId) }
+                        )
                     }
                 }
             }
@@ -150,12 +138,22 @@ private fun DonationCard(donation: Donation, onClick: () -> Unit) {
             verticalAlignment = Alignment.Top
         ) {
             Row(modifier = Modifier.weight(1f)) {
-                Icon(
-                    imageVector = Icons.Outlined.Fastfood,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp),
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            MaterialTheme.shapes.medium
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Fastfood,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(
