@@ -74,8 +74,16 @@ class NgoHomeViewModel : ViewModel() {
                     it.copy(myRequestsCount = totalRequests, approvedCount = approved)
                 }
             },
-            onError = { }
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(updateMessage = "Could not load request stats: ${FirebaseHelper.mapFirebaseError(exception)}")
+                }
+            }
         )
+    }
+
+    fun clearUpdateMessage() {
+        _uiState.update { it.copy(updateMessage = null) }
     }
 
     fun retry() {

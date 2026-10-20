@@ -51,7 +51,11 @@ class FoodDetailViewModel : ViewModel() {
             onResult = { exists ->
                 _uiState.update { it.copy(alreadyRequested = exists) }
             },
-            onFailure = { }
+            onFailure = { exception ->
+                _uiState.update {
+                    it.copy(requestError = "Could not check existing requests: ${FirebaseHelper.mapFirebaseError(exception)}")
+                }
+            }
         )
     }
 

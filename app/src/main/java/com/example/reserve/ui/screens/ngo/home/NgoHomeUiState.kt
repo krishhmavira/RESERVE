@@ -9,5 +9,6 @@ data class NgoHomeUiState(
     val approvedCount: Int = 0,
     val recentAvailable: List<Donation> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val updateMessage: String? = null
 )

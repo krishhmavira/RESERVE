@@ -62,9 +62,17 @@ class MyRequestsViewModel : ViewModel() {
                         }
                     }
                 },
-                onFailure = { }
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(updateMessage = "Could not load donation name: ${FirebaseHelper.mapFirebaseError(exception)}")
+                    }
+                }
             )
         }
+    }
+
+    fun clearUpdateMessage() {
+        _uiState.update { it.copy(updateMessage = null) }
     }
 
     fun retry() {

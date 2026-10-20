@@ -52,8 +52,13 @@ class RequestDetailViewModel : ViewModel() {
             onUpdate = { donation ->
                 _uiState.update { it.copy(isLoading = false, donation = donation) }
             },
-            onError = {
-                _uiState.update { it.copy(isLoading = false) }
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        updateMessage = "Could not load donation details: ${FirebaseHelper.mapFirebaseError(exception)}"
+                    )
+                }
             }
         )
     }
