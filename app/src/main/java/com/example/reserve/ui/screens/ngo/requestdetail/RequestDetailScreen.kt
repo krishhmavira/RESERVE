@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
@@ -131,6 +132,21 @@ fun RequestDetailScreen(
                             }
                             StatusBadge(status = request.status)
                         }
+                        if (donation != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Donation Status",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                StatusBadge(status = donation.status)
+                            }
+                        }
                     }
 
                     // Request info
@@ -188,10 +204,40 @@ fun RequestDetailScreen(
 
                     // Status messages
                     when (request.status) {
+                        RequestStatus.PENDING.name -> {
+                            if (donation != null && donation.status != DonationStatus.REQUESTED.name) {
+                                ReserveCard {
+                                    Text(
+                                        text = when (donation.status) {
+                                            DonationStatus.APPROVED.name ->
+                                                "This donation has been approved for another request. Your request is still pending."
+                                            DonationStatus.EXPIRED.name ->
+                                                "This donation has expired. Your request may no longer be fulfilled."
+                                            DonationStatus.COMPLETED.name ->
+                                                "This donation has been completed."
+                                            else ->
+                                                "The donation status has changed. Your request is still pending."
+                                        },
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
                         RequestStatus.APPROVED.name -> {
                             ReserveCard {
                                 Text(
                                     text = "Your request has been approved! Please arrange pickup.",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
+                        RequestStatus.COLLECTED.name -> {
+                            ReserveCard {
+                                Text(
+                                    text = "Food has been collected. Thank you!",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.Medium
@@ -211,7 +257,7 @@ fun RequestDetailScreen(
                         RequestStatus.REJECTED.name -> {
                             ReserveCard {
                                 Text(
-                                    text = "This request has been cancelled.",
+                                    text = "This request was declined or cancelled.",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
