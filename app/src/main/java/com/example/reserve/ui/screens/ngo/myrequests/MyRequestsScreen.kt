@@ -116,17 +116,28 @@ fun MyRequestsScreen(
                     onRetry = { myRequestsViewModel.retry() }
                 )
                 uiState.filteredRequests.isEmpty() -> EmptyStateView(
-                    title = "No requests found",
-                    message = if (uiState.selectedFilter == "ALL")
-                        "You haven't made any food requests yet"
+                    title = if (uiState.selectedFilter == "ALL")
+                        "No requests yet"
                     else
                         "No ${uiState.selectedFilter.replace("_", " ").lowercase()} requests",
+                    message = if (uiState.selectedFilter == "ALL")
+                        "Browse available food and make your first request"
+                    else
+                        "Try selecting a different filter",
                     icon = Icons.Outlined.VolunteerActivism
                 )
                 else -> LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    item {
+                        Text(
+                            text = "${uiState.filteredRequests.size} request${if (uiState.filteredRequests.size != 1) "s" else ""}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                     items(
                         items = uiState.filteredRequests,
                         key = { it.requestId }
