@@ -48,9 +48,7 @@ import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.StatusBadge
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.reserve.ui.components.formatTimestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,10 +174,4 @@ private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> U
             StatusBadge(status = request.status)
         }
     }
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    return try {
-        SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(Date(timestamp))
-    } catch (_: Exception) { "" }
 }

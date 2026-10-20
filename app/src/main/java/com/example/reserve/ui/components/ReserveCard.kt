@@ -17,34 +17,29 @@ fun ReserveCard(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val cardModifier = modifier.fillMaxWidth()
+    val colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    val elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    val shape = MaterialTheme.shapes.large
+
     if (onClick != null) {
         Card(
             onClick = onClick,
-            modifier = modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            modifier = cardModifier,
+            shape = shape,
+            colors = colors,
+            elevation = elevation
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                content = content
-            )
+            Column(modifier = Modifier.padding(16.dp), content = content)
         }
     } else {
         Card(
-            modifier = modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.large,
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+            modifier = cardModifier,
+            shape = shape,
+            colors = colors,
+            elevation = elevation
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                content = content
-            )
+            Column(modifier = Modifier.padding(16.dp), content = content)
         }
     }
 }

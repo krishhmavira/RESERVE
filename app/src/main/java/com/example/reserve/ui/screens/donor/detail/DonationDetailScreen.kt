@@ -43,7 +43,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,13 +52,12 @@ import com.example.reserve.data.model.FoodRequest
 import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
+import com.example.reserve.ui.components.DetailRow
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.ReserveOutlinedButton
 import com.example.reserve.ui.components.ReservePrimaryButton
 import com.example.reserve.ui.components.StatusBadge
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.reserve.ui.components.formatTimestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -413,39 +411,3 @@ private fun RequestItem(
     }
 }
 
-@Composable
-private fun DetailRow(icon: ImageVector, label: String, value: String) {
-    Row(
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(end = 12.dp, top = 2.dp)
-        )
-        Column {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        }
-    }
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    return try {
-        val sdf = SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault())
-        sdf.format(Date(timestamp))
-    } catch (_: Exception) {
-        ""
-    }
-}

@@ -38,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -50,12 +49,11 @@ import com.example.reserve.data.model.Donation
 import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
+import com.example.reserve.ui.components.DetailRow
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.ReservePrimaryButton
 import com.example.reserve.ui.components.StatusBadge
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.reserve.ui.components.formatTimestamp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,20 +197,3 @@ fun FoodDetailScreen(
     }
 }
 
-@Composable
-private fun DetailRow(icon: ImageVector, label: String, value: String) {
-    Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
-        Icon(icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 12.dp, top = 2.dp))
-        Column {
-            Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
-        }
-    }
-}
-
-private fun formatTimestamp(timestamp: Long): String {
-    return try {
-        SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault()).format(Date(timestamp))
-    } catch (_: Exception) { "" }
-}
