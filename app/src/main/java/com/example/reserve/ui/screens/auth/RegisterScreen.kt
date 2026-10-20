@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -51,6 +50,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.reserve.ui.components.ReservePrimaryButton
 import com.example.reserve.ui.components.ReserveTextField
@@ -74,42 +74,59 @@ fun RegisterScreen(
         }
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
     ) {
+        // Header
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primaryContainer)
+                .padding(horizontal = 24.dp, vertical = 32.dp)
+        ) {
+            Column {
+                Icon(
+                    imageVector = Icons.Rounded.Eco,
+                    contentDescription = null,
+                    modifier = Modifier.size(36.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Create Account",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Join RESERVE and help reduce food waste",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(top = 24.dp)
         ) {
-            Spacer(modifier = Modifier.height(48.dp))
-
-            // Header
+            // Personal info section
             Text(
-                text = "Create Account",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.SemiBold
-                ),
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
+                text = "Personal Information",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 0.5.sp
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = "Join RESERVE and help reduce food waste",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(28.dp))
-
-            // Name
             ReserveTextField(
                 value = state.name,
                 onValueChange = authViewModel::updateRegisterName,
@@ -125,9 +142,8 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Email
             ReserveTextField(
                 value = state.email,
                 onValueChange = authViewModel::updateRegisterEmail,
@@ -143,9 +159,8 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Phone
             ReserveTextField(
                 value = state.phone,
                 onValueChange = authViewModel::updateRegisterPhone,
@@ -161,9 +176,19 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Password
+            // Security section
+            Text(
+                text = "Security",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 0.5.sp
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             ReserveTextField(
                 value = state.password,
                 onValueChange = authViewModel::updateRegisterPassword,
@@ -188,9 +213,8 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Confirm Password
             ReserveTextField(
                 value = state.confirmPassword,
                 onValueChange = authViewModel::updateRegisterConfirmPassword,
@@ -215,17 +239,18 @@ fun RegisterScreen(
                 )
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             // Role selection
             Text(
                 text = "I am a",
                 style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                letterSpacing = 0.5.sp
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -262,19 +287,18 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Error message
             if (state.errorMessage != null) {
                 Text(
                     text = state.errorMessage!!,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
                 )
-                Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Register button
             ReservePrimaryButton(
                 text = "Create Account",
                 onClick = { authViewModel.register() },
@@ -283,7 +307,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Login link
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center
@@ -296,7 +319,7 @@ fun RegisterScreen(
                 Text(
                     text = "Sign In",
                     style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     ),
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { onNavigateToLogin() }
@@ -344,6 +367,7 @@ private fun RoleCard(
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
             color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center
         )

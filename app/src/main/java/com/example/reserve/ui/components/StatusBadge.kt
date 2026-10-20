@@ -19,15 +19,16 @@ fun StatusBadge(
 
     Surface(
         modifier = modifier,
-        shape = MaterialTheme.shapes.small,
+        shape = MaterialTheme.shapes.extraSmall,
         color = backgroundColor
     ) {
         Text(
             text = status.replace("_", " "),
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = textColor
+            fontWeight = FontWeight.Bold,
+            color = textColor,
+            letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing
         )
     }
 }
@@ -37,7 +38,7 @@ private fun statusColors(status: String): Pair<Color, Color> {
     val scheme = MaterialTheme.colorScheme
     return when (status.uppercase()) {
         "AVAILABLE" -> scheme.tertiaryContainer to scheme.onTertiaryContainer
-        "PENDING" -> Color(0xFFFFF3CD) to Color(0xFF664D03)
+        "PENDING" -> scheme.secondaryContainer to scheme.onSecondaryContainer
         "APPROVED" -> scheme.primaryContainer to scheme.onPrimaryContainer
         "REQUESTED" -> scheme.secondaryContainer to scheme.onSecondaryContainer
         "COLLECTED" -> scheme.primaryContainer to scheme.onPrimaryContainer
