@@ -19,7 +19,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.outlined.Fastfood
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
@@ -241,9 +244,37 @@ fun RequestDetailScreen(
                     if (request.status == RequestStatus.PENDING.name) {
                         ReserveCard {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text("Actions", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .background(
+                                                MaterialTheme.colorScheme.errorContainer,
+                                                MaterialTheme.shapes.medium
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Close,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Text(
+                                        text = "Actions",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                                Text(
+                                    text = "You can cancel this request while it's still pending.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                                 ReserveOutlinedButton(
-                                    text = "Cancel Request",
+                                    text = if (uiState.isUpdating) "Cancelling..." else "Cancel Request",
                                     onClick = { requestDetailViewModel.cancelRequest() },
                                     enabled = !uiState.isUpdating
                                 )
@@ -255,61 +286,106 @@ fun RequestDetailScreen(
                     when (request.status) {
                         RequestStatus.PENDING.name -> {
                             if (donation != null && donation.status != DonationStatus.REQUESTED.name) {
-                                ReserveCard {
-                                    Text(
-                                        text = when (donation.status) {
-                                            DonationStatus.APPROVED.name ->
-                                                "This donation has been approved for another request. Your request is still pending."
-                                            DonationStatus.EXPIRED.name ->
-                                                "This donation has expired. Your request may no longer be fulfilled."
-                                            DonationStatus.COMPLETED.name ->
-                                                "This donation has been completed."
-                                            else ->
-                                                "The donation status has changed. Your request is still pending."
-                                        },
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+                                    Row(verticalAlignment = Alignment.Top) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Warning,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Text(
+                                            text = when (donation.status) {
+                                                DonationStatus.APPROVED.name ->
+                                                    "This donation has been approved for another request. Your request is still pending."
+                                                DonationStatus.EXPIRED.name ->
+                                                    "This donation has expired. Your request may no longer be fulfilled."
+                                                DonationStatus.COMPLETED.name ->
+                                                    "This donation has been completed."
+                                                else ->
+                                                    "The donation status has changed. Your request is still pending."
+                                            },
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
                             }
                         }
                         RequestStatus.APPROVED.name -> {
-                            ReserveCard {
-                                Text(
-                                    text = "Your request has been approved! Please arrange pickup.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
+                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Your request has been approved! Please arrange pickup.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         }
                         RequestStatus.COLLECTED.name -> {
-                            ReserveCard {
-                                Text(
-                                    text = "Food has been collected. Thank you!",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
+                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Food has been collected. Thank you!",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         }
                         RequestStatus.COMPLETED.name -> {
-                            ReserveCard {
-                                Text(
-                                    text = "This request has been completed. Thank you for serving the community!",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
+                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CheckCircle,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "This request has been completed. Thank you for serving the community!",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         }
                         RequestStatus.REJECTED.name -> {
-                            ReserveCard {
-                                Text(
-                                    text = "This request was declined or cancelled.",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Close,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(20.dp),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "This request was declined or cancelled.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
