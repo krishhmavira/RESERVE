@@ -16,11 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -56,12 +55,8 @@ fun ProfileScreen(
 ) {
     val user by authViewModel.currentUser.collectAsState()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+    Scaffold(
+        topBar = {
             TopAppBar(
                 title = {
                     Text(
@@ -91,122 +86,121 @@ fun ProfileScreen(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Column(
+            val initials = user?.name
+                ?.split(" ")
+                ?.take(2)
+                ?.mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                ?.joinToString("") ?: "?"
+
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .size(96.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Avatar
-                val initials = user?.name
-                    ?.split(" ")
-                    ?.take(2)
-                    ?.mapNotNull { it.firstOrNull()?.uppercaseChar() }
-                    ?.joinToString("") ?: "?"
-
-                Box(
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primaryContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = initials,
-                        style = MaterialTheme.typography.headlineLarge.copy(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
-                    text = user?.name ?: "Unknown",
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.SemiBold
+                    text = initials,
+                    style = MaterialTheme.typography.headlineLarge.copy(
+                        fontWeight = FontWeight.Bold
                     ),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    textAlign = TextAlign.Center
+                    color = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                val roleLabel = when (user?.role) {
-                    "DONOR" -> "Food Donor"
-                    "NGO" -> "NGO / Community"
-                    else -> user?.role ?: ""
-                }
-                if (roleLabel.isNotBlank()) {
-                    Text(
-                        text = roleLabel,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Info rows
-                ProfileInfoRow(
-                    icon = Icons.Outlined.Email,
-                    label = "Email",
-                    value = user?.email ?: "—"
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Outlined.Phone,
-                    label = "Phone",
-                    value = user?.phone?.ifBlank { "Not set" } ?: "Not set"
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Outlined.Home,
-                    label = "Address",
-                    value = user?.address?.ifBlank { "Not set" } ?: "Not set"
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                ProfileInfoRow(
-                    icon = Icons.Outlined.VolunteerActivism,
-                    label = "Role",
-                    value = roleLabel.ifBlank { "Not set" }
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                ReservePrimaryButton(
-                    text = "Edit Profile",
-                    onClick = onNavigateToEditProfile
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ReserveOutlinedButton(
-                    text = "Log Out",
-                    onClick = onLogout
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = user?.name ?: "Unknown",
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.SemiBold
+                ),
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            val roleLabel = when (user?.role) {
+                "DONOR" -> "Food Donor"
+                "NGO" -> "NGO / Community"
+                else -> user?.role ?: ""
+            }
+            if (roleLabel.isNotBlank()) {
+                Text(
+                    text = roleLabel,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            ProfileInfoRow(
+                icon = Icons.Outlined.Email,
+                label = "Email",
+                value = user?.email ?: "—"
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ProfileInfoRow(
+                icon = Icons.Outlined.Phone,
+                label = "Phone",
+                value = user?.phone?.ifBlank { "Not set" } ?: "Not set"
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ProfileInfoRow(
+                icon = Icons.Outlined.Home,
+                label = "Address",
+                value = user?.address?.ifBlank { "Not set" } ?: "Not set"
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ProfileInfoRow(
+                icon = Icons.Outlined.VolunteerActivism,
+                label = "Role",
+                value = roleLabel.ifBlank { "Not set" }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            ReservePrimaryButton(
+                text = "Edit Profile",
+                onClick = onNavigateToEditProfile
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ReserveOutlinedButton(
+                text = "Log Out",
+                onClick = onLogout
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
