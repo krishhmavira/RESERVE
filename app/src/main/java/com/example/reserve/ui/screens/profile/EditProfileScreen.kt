@@ -127,6 +127,16 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Text(
+                text = "Personal Information",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
+
             ReserveTextField(
                 value = name,
                 onValueChange = {
@@ -157,7 +167,17 @@ fun EditProfileScreen(
                 readOnly = true
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Contact Details",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
+            )
 
             ReserveTextField(
                 value = phone,

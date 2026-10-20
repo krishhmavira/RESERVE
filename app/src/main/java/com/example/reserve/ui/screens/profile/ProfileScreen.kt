@@ -22,11 +22,11 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -41,6 +41,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.ReserveOutlinedButton
 import com.example.reserve.ui.components.ReservePrimaryButton
 import com.example.reserve.ui.screens.auth.AuthViewModel
@@ -96,7 +97,7 @@ fun ProfileScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
             val initials = user?.name
                 ?.split(" ")
@@ -106,7 +107,7 @@ fun ProfileScreen(
 
             Box(
                 modifier = Modifier
-                    .size(96.dp)
+                    .size(100.dp)
                     .clip(CircleShape)
                     .background(MaterialTheme.colorScheme.primaryContainer),
                 contentAlignment = Alignment.Center
@@ -125,13 +126,13 @@ fun ProfileScreen(
             Text(
                 text = user?.name ?: "Unknown",
                 style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Bold
                 ),
                 color = MaterialTheme.colorScheme.onBackground,
                 textAlign = TextAlign.Center
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             val roleLabel = when (user?.role) {
                 "DONOR" -> "Food Donor"
@@ -139,54 +140,57 @@ fun ProfileScreen(
                 else -> user?.role ?: ""
             }
             if (roleLabel.isNotBlank()) {
-                Text(
-                    text = roleLabel,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Surface(
+                    shape = MaterialTheme.shapes.small,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                ) {
+                    Text(
+                        text = roleLabel,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            ReserveCard {
+                Column {
+                    Text(
+                        text = "Contact Information",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    ProfileInfoRow(
+                        icon = Icons.Outlined.Email,
+                        label = "Email",
+                        value = user?.email ?: "—"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Outlined.Phone,
+                        label = "Phone",
+                        value = user?.phone?.ifBlank { "Not set" } ?: "Not set"
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    ProfileInfoRow(
+                        icon = Icons.Outlined.Home,
+                        label = "Address",
+                        value = user?.address?.ifBlank { "Not set" } ?: "Not set"
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            ProfileInfoRow(
-                icon = Icons.Outlined.Email,
-                label = "Email",
-                value = user?.email ?: "—"
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            ProfileInfoRow(
-                icon = Icons.Outlined.Phone,
-                label = "Phone",
-                value = user?.phone?.ifBlank { "Not set" } ?: "Not set"
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            ProfileInfoRow(
-                icon = Icons.Outlined.Home,
-                label = "Address",
-                value = user?.address?.ifBlank { "Not set" } ?: "Not set"
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            ProfileInfoRow(
-                icon = Icons.Outlined.VolunteerActivism,
-                label = "Role",
-                value = roleLabel.ifBlank { "Not set" }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-
-            Spacer(modifier = Modifier.height(32.dp))
 
             ReservePrimaryButton(
                 text = "Edit Profile",
@@ -213,15 +217,25 @@ private fun ProfileInfoRow(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(22.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.width(16.dp))
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    MaterialTheme.shapes.medium
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = label,
