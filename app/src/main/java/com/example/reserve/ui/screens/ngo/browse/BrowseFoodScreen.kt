@@ -81,9 +81,9 @@ fun BrowseFoodScreen(
             ReserveTextField(
                 value = uiState.searchQuery,
                 onValueChange = { browseFoodViewModel.updateSearchQuery(it) },
-                label = "Search by name or location",
+                label = "Search by food name or location",
                 leadingIcon = Icons.Outlined.Search,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                modifier = Modifier.padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 12.dp)
             )
 
             LazyRow(
@@ -111,17 +111,28 @@ fun BrowseFoodScreen(
                     onRetry = { browseFoodViewModel.retry() }
                 )
                 uiState.filteredDonations.isEmpty() -> EmptyStateView(
-                    title = "No food found",
-                    message = if (uiState.searchQuery.isNotBlank() || uiState.selectedFoodType != "ALL")
-                        "Try adjusting your filters"
+                    title = if (uiState.searchQuery.isNotBlank() || uiState.selectedFoodType != "ALL")
+                        "No matching food"
                     else
-                        "No available donations right now",
+                        "No food available",
+                    message = if (uiState.searchQuery.isNotBlank() || uiState.selectedFoodType != "ALL")
+                        "Try adjusting your search or filters to find available food"
+                    else
+                        "No donations are available right now. Check back soon!",
                     icon = Icons.Outlined.Fastfood
                 )
                 else -> LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    item {
+                        Text(
+                            text = "${uiState.filteredDonations.size} available donation${if (uiState.filteredDonations.size != 1) "s" else ""}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                     items(
                         items = uiState.filteredDonations,
                         key = { it.donationId }
