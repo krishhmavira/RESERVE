@@ -83,10 +83,10 @@ fun ReserveNavGraph(
                     }
                 },
                 onNavigateToRegister = {
-                    navController.navigate(ReserveRoute.Register)
+                    navController.navigate(ReserveRoute.Register) { launchSingleTop = true }
                 },
                 onNavigateToForgotPassword = {
-                    navController.navigate(ReserveRoute.ForgotPassword)
+                    navController.navigate(ReserveRoute.ForgotPassword) { launchSingleTop = true }
                 },
                 authViewModel = authViewModel
             )
@@ -118,16 +118,16 @@ fun ReserveNavGraph(
         composable<ReserveRoute.DonorHome> {
             DonorHomeScreen(
                 onNavigateToAddDonation = {
-                    navController.navigate(ReserveRoute.AddDonation)
+                    navController.navigate(ReserveRoute.AddDonation) { launchSingleTop = true }
                 },
                 onNavigateToMyDonations = {
-                    navController.navigate(ReserveRoute.MyDonations)
+                    navController.navigate(ReserveRoute.MyDonations) { launchSingleTop = true }
                 },
                 onNavigateToDonationDetail = { donationId ->
-                    navController.navigate(ReserveRoute.DonationDetail(donationId))
+                    navController.navigate(ReserveRoute.DonationDetail(donationId)) { launchSingleTop = true }
                 },
                 onNavigateToProfile = {
-                    navController.navigate(ReserveRoute.Profile)
+                    navController.navigate(ReserveRoute.Profile) { launchSingleTop = true }
                 },
                 authViewModel = authViewModel
             )
@@ -157,7 +157,7 @@ fun ReserveNavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToDonationDetail = { donationId ->
-                    navController.navigate(ReserveRoute.DonationDetail(donationId))
+                    navController.navigate(ReserveRoute.DonationDetail(donationId)) { launchSingleTop = true }
                 }
             )
         }
@@ -166,16 +166,16 @@ fun ReserveNavGraph(
         composable<ReserveRoute.NgoHome> {
             NgoHomeScreen(
                 onNavigateToBrowseFood = {
-                    navController.navigate(ReserveRoute.BrowseFood)
+                    navController.navigate(ReserveRoute.BrowseFood) { launchSingleTop = true }
                 },
                 onNavigateToMyRequests = {
-                    navController.navigate(ReserveRoute.MyRequests)
+                    navController.navigate(ReserveRoute.MyRequests) { launchSingleTop = true }
                 },
                 onNavigateToFoodDetail = { donationId ->
-                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                    navController.navigate(ReserveRoute.FoodDetail(donationId)) { launchSingleTop = true }
                 },
                 onNavigateToProfile = {
-                    navController.navigate(ReserveRoute.Profile)
+                    navController.navigate(ReserveRoute.Profile) { launchSingleTop = true }
                 },
                 authViewModel = authViewModel
             )
@@ -186,7 +186,7 @@ fun ReserveNavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToFoodDetail = { donationId ->
-                    navController.navigate(ReserveRoute.FoodDetail(donationId))
+                    navController.navigate(ReserveRoute.FoodDetail(donationId)) { launchSingleTop = true }
                 }
             )
         }
@@ -208,7 +208,7 @@ fun ReserveNavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToRequestDetail = { requestId ->
-                    navController.navigate(ReserveRoute.RequestDetail(requestId))
+                    navController.navigate(ReserveRoute.RequestDetail(requestId)) { launchSingleTop = true }
                 }
             )
         }
@@ -229,7 +229,7 @@ fun ReserveNavGraph(
                     navController.popBackStack()
                 },
                 onNavigateToEditProfile = {
-                    navController.navigate(ReserveRoute.EditProfile)
+                    navController.navigate(ReserveRoute.EditProfile) { launchSingleTop = true }
                 },
                 onLogout = {
                     authViewModel.logout()
