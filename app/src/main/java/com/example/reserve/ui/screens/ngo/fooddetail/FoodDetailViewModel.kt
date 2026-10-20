@@ -77,27 +77,17 @@ class FoodDetailViewModel : ViewModel() {
             requestTime = System.currentTimeMillis()
         )
 
-        foodRequestRepository.createRequest(
+        foodRequestRepository.createRequestAndUpdateDonation(
             request = request,
+            donationStatus = DonationStatus.REQUESTED.name,
             onSuccess = {
-                donationRepository.updateDonationStatus(
-                    donationId = donation.donationId,
-                    status = DonationStatus.REQUESTED.name,
-                    onSuccess = {
-                        _uiState.update {
-                            it.copy(
-                                isRequesting = false,
-                                requestSuccess = true,
-                                alreadyRequested = true
-                            )
-                        }
-                    },
-                    onFailure = {
-                        _uiState.update {
-                            it.copy(isRequesting = false, requestSuccess = true, alreadyRequested = true)
-                        }
-                    }
-                )
+                _uiState.update {
+                    it.copy(
+                        isRequesting = false,
+                        requestSuccess = true,
+                        alreadyRequested = true
+                    )
+                }
             },
             onFailure = { exception ->
                 _uiState.update {

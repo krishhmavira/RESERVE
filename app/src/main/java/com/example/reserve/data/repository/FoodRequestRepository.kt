@@ -126,6 +126,25 @@ class FoodRequestRepository {
             }
     }
 
+    fun createRequestAndUpdateDonation(
+        request: FoodRequest,
+        donationStatus: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val docRef = requestsCollection.document()
+        val toSave = request.copy(requestId = docRef.id)
+        val batch = firestore.batch()
+        batch.set(docRef, toSave)
+        batch.update(
+            firestore.collection("donations").document(request.donationId),
+            "status", donationStatus
+        )
+        batch.commit()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
     fun approveRequest(
         requestId: String,
         donationId: String,
