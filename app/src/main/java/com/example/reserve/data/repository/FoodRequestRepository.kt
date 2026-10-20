@@ -155,14 +155,25 @@ class FoodRequestRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
-        val batch = firestore.batch()
-        batch.update(requestsCollection.document(requestId), "status", "APPROVED")
-        batch.update(
-            firestore.collection("donations").document(donationId),
-            "status", "APPROVED"
-        )
-        batch.commit()
-            .addOnSuccessListener { onSuccess() }
+        requestsCollection
+            .whereEqualTo("donationId", donationId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val batch = firestore.batch()
+                batch.update(requestsCollection.document(requestId), "status", "APPROVED")
+                batch.update(
+                    firestore.collection("donations").document(donationId),
+                    "status", "APPROVED"
+                )
+                for (doc in snapshot.documents) {
+                    if (doc.id != requestId && doc.getString("status") == "PENDING") {
+                        batch.update(requestsCollection.document(doc.id), "status", "REJECTED")
+                    }
+                }
+                batch.commit()
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
             .addOnFailureListener { onFailure(it) }
     }
 
