@@ -7,7 +7,8 @@ data class MyRequestsUiState(
     val donationNames: Map<String, String> = emptyMap(),
     val selectedFilter: String = "ALL",
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val updateMessage: String? = null
 ) {
     val filteredRequests: List<FoodRequest>
         get() = if (selectedFilter == "ALL") {

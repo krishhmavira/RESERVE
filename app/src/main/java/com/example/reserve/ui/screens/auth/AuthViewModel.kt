@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.reserve.data.model.User
 import com.example.reserve.data.repository.UserRepository
+import com.example.reserve.data.util.FirebaseHelper
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -397,20 +398,6 @@ class AuthViewModel : ViewModel() {
     }
 
     private fun mapFirebaseError(exception: Exception): String {
-        return when {
-            exception.message?.contains("no user record", ignoreCase = true) == true ->
-                "No account found with this email"
-            exception.message?.contains("password is invalid", ignoreCase = true) == true ->
-                "Incorrect password"
-            exception.message?.contains("email address is badly formatted", ignoreCase = true) == true ->
-                "Invalid email format"
-            exception.message?.contains("email address is already in use", ignoreCase = true) == true ->
-                "An account with this email already exists"
-            exception.message?.contains("network error", ignoreCase = true) == true ->
-                "Network error. Please check your connection."
-            exception.message?.contains("too many unsuccessful", ignoreCase = true) == true ->
-                "Too many attempts. Please try again later."
-            else -> exception.message ?: "An unexpected error occurred"
-        }
+        return FirebaseHelper.mapFirebaseError(exception)
     }
 }

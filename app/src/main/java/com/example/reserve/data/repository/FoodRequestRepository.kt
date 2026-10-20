@@ -74,7 +74,11 @@ class FoodRequestRepository {
             .whereEqualTo("ngoId", ngoId)
             .get()
             .addOnSuccessListener { snapshot ->
-                onResult(!snapshot.isEmpty)
+                val hasActiveRequest = snapshot.documents.any { doc ->
+                    val status = doc.getString("status")
+                    status != "REJECTED"
+                }
+                onResult(hasActiveRequest)
             }
             .addOnFailureListener { onFailure(it) }
     }
@@ -87,6 +91,100 @@ class FoodRequestRepository {
     ) {
         requestsCollection.document(requestId)
             .update("status", status)
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun listenToRequest(
+        requestId: String,
+        onUpdate: (FoodRequest?) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return requestsCollection.document(requestId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                onUpdate(snapshot?.toObject(FoodRequest::class.java))
+            }
+    }
+
+    fun listenToRequestsForDonation(
+        donationId: String,
+        onUpdate: (List<FoodRequest>) -> Unit,
+        onError: (Exception) -> Unit
+    ): ListenerRegistration {
+        return requestsCollection
+            .whereEqualTo("donationId", donationId)
+            .orderBy("requestTime", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onError(error)
+                    return@addSnapshotListener
+                }
+                val requests = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(FoodRequest::class.java)
+                } ?: emptyList()
+                onUpdate(requests)
+            }
+    }
+
+    fun createRequestAndUpdateDonation(
+        request: FoodRequest,
+        donationStatus: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val docRef = requestsCollection.document()
+        val toSave = request.copy(requestId = docRef.id)
+        val batch = firestore.batch()
+        batch.set(docRef, toSave)
+        batch.update(
+            firestore.collection("donations").document(request.donationId),
+            "status", donationStatus
+        )
+        batch.commit()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun approveRequest(
+        requestId: String,
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val batch = firestore.batch()
+        batch.update(requestsCollection.document(requestId), "status", "APPROVED")
+        batch.update(
+            firestore.collection("donations").document(donationId),
+            "status", "APPROVED"
+        )
+        batch.commit()
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun rejectRequest(
+        requestId: String,
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val donationDoc = firestore.collection("donations").document(donationId)
+        val requestDoc = requestsCollection.document(requestId)
+
+        firestore.runTransaction { transaction ->
+            val donationSnapshot = transaction.get(donationDoc)
+            val currentStatus = donationSnapshot.getString("status")
+
+            transaction.update(requestDoc, "status", "REJECTED")
+
+            if (currentStatus == "REQUESTED") {
+                transaction.update(donationDoc, "status", "AVAILABLE")
+            }
+        }
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }

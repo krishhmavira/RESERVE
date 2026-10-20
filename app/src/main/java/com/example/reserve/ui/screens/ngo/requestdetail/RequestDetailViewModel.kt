@@ -5,6 +5,8 @@ import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.data.repository.DonationRepository
 import com.example.reserve.data.repository.FoodRequestRepository
+import com.example.reserve.data.util.FirebaseHelper
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,32 +20,45 @@ class RequestDetailViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(RequestDetailUiState())
     val uiState: StateFlow<RequestDetailUiState> = _uiState.asStateFlow()
 
+    private var requestListener: ListenerRegistration? = null
+    private var donationListener: ListenerRegistration? = null
+
     fun loadRequest(requestId: String) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-        foodRequestRepository.getRequest(
+
+        requestListener?.remove()
+        requestListener = foodRequestRepository.listenToRequest(
             requestId = requestId,
-            onSuccess = { request ->
-                _uiState.update { it.copy(request = request) }
+            onUpdate = { request ->
                 if (request != null) {
-                    loadDonation(request.donationId)
+                    _uiState.update { it.copy(request = request) }
+                    listenToDonation(request.donationId)
                 } else {
                     _uiState.update { it.copy(isLoading = false, errorMessage = "Request not found") }
                 }
             },
-            onFailure = { exception ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = exception.message) }
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(exception))
+                }
             }
         )
     }
 
-    private fun loadDonation(donationId: String) {
-        donationRepository.getDonation(
+    private fun listenToDonation(donationId: String) {
+        if (donationListener != null) return
+        donationListener = donationRepository.listenToDonation(
             donationId = donationId,
-            onSuccess = { donation ->
+            onUpdate = { donation ->
                 _uiState.update { it.copy(isLoading = false, donation = donation) }
             },
-            onFailure = {
-                _uiState.update { it.copy(isLoading = false) }
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        updateMessage = "Could not load donation details: ${FirebaseHelper.mapFirebaseError(exception)}"
+                    )
+                }
             }
         )
     }
@@ -52,37 +67,17 @@ class RequestDetailViewModel : ViewModel() {
         val request = _uiState.value.request ?: return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
 
-        foodRequestRepository.updateRequestStatus(
+        foodRequestRepository.rejectRequest(
             requestId = request.requestId,
-            status = RequestStatus.REJECTED.name,
+            donationId = request.donationId,
             onSuccess = {
-                donationRepository.updateDonationStatus(
-                    donationId = request.donationId,
-                    status = DonationStatus.AVAILABLE.name,
-                    onSuccess = {
-                        _uiState.update {
-                            it.copy(
-                                isUpdating = false,
-                                request = it.request?.copy(status = RequestStatus.REJECTED.name),
-                                donation = it.donation?.copy(status = DonationStatus.AVAILABLE.name),
-                                updateMessage = "Request cancelled"
-                            )
-                        }
-                    },
-                    onFailure = {
-                        _uiState.update {
-                            it.copy(
-                                isUpdating = false,
-                                request = it.request?.copy(status = RequestStatus.REJECTED.name),
-                                updateMessage = "Request cancelled"
-                            )
-                        }
-                    }
-                )
+                _uiState.update {
+                    it.copy(isUpdating = false, updateMessage = "Request cancelled")
+                }
             },
             onFailure = { exception ->
                 _uiState.update {
-                    it.copy(isUpdating = false, updateMessage = exception.message ?: "Failed to cancel")
+                    it.copy(isUpdating = false, updateMessage = FirebaseHelper.mapFirebaseError(exception))
                 }
             }
         )
@@ -90,5 +85,11 @@ class RequestDetailViewModel : ViewModel() {
 
     fun clearUpdateMessage() {
         _uiState.update { it.copy(updateMessage = null) }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        requestListener?.remove()
+        donationListener?.remove()
     }
 }

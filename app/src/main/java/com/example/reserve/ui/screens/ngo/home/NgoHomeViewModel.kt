@@ -1,13 +1,12 @@
 package com.example.reserve.ui.screens.ngo.home
 
 import androidx.lifecycle.ViewModel
-import com.example.reserve.data.model.Donation
-import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.RequestStatus
+import com.example.reserve.data.repository.DonationRepository
+import com.example.reserve.data.repository.FoodRequestRepository
+import com.example.reserve.data.util.FirebaseHelper
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,7 +14,8 @@ import kotlinx.coroutines.flow.update
 
 class NgoHomeViewModel : ViewModel() {
 
-    private val firestore = FirebaseFirestore.getInstance()
+    private val donationRepository = DonationRepository()
+    private val foodRequestRepository = FoodRequestRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _uiState = MutableStateFlow(NgoHomeUiState())
@@ -40,18 +40,8 @@ class NgoHomeViewModel : ViewModel() {
 
     private fun loadAvailableDonations() {
         donationsListener?.remove()
-        donationsListener = firestore.collection("donations")
-            .whereEqualTo("status", DonationStatus.AVAILABLE.name)
-            .orderBy("createdAt", Query.Direction.DESCENDING)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) {
-                    _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
-                    return@addSnapshotListener
-                }
-                val donations = snapshot?.documents?.mapNotNull { doc ->
-                    doc.toObject(Donation::class.java)
-                } ?: emptyList()
-
+        donationsListener = donationRepository.listenToAvailableDonations(
+            onUpdate = { donations ->
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -60,26 +50,40 @@ class NgoHomeViewModel : ViewModel() {
                         errorMessage = null
                     )
                 }
+            },
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(exception))
+                }
             }
+        )
     }
 
     private fun loadMyRequestStats() {
         val uid = auth.currentUser?.uid ?: return
         requestsListener?.remove()
-        requestsListener = firestore.collection("foodRequests")
-            .whereEqualTo("ngoId", uid)
-            .addSnapshotListener { snapshot, error ->
-                if (error != null) return@addSnapshotListener
-                val requests = snapshot?.documents ?: emptyList()
+        requestsListener = foodRequestRepository.listenToNgoRequests(
+            ngoId = uid,
+            onUpdate = { requests ->
                 val totalRequests = requests.size
-                val approved = requests.count { doc ->
-                    val status = doc.getString("status")
-                    status == RequestStatus.APPROVED.name || status == RequestStatus.COMPLETED.name
+                val approved = requests.count { request ->
+                    request.status == RequestStatus.APPROVED.name ||
+                        request.status == RequestStatus.COMPLETED.name
                 }
                 _uiState.update {
                     it.copy(myRequestsCount = totalRequests, approvedCount = approved)
                 }
+            },
+            onError = { exception ->
+                _uiState.update {
+                    it.copy(updateMessage = "Could not load request stats: ${FirebaseHelper.mapFirebaseError(exception)}")
+                }
             }
+        )
+    }
+
+    fun clearUpdateMessage() {
+        _uiState.update { it.copy(updateMessage = null) }
     }
 
     fun retry() {

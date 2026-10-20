@@ -2,6 +2,7 @@ package com.example.reserve.ui.screens.donor.mydonations
 
 import androidx.lifecycle.ViewModel
 import com.example.reserve.data.repository.DonationRepository
+import com.example.reserve.data.util.FirebaseHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -45,7 +46,7 @@ class MyDonationsViewModel : ViewModel() {
             },
             onError = { error ->
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = error.message)
+                    it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(error))
                 }
             }
         )

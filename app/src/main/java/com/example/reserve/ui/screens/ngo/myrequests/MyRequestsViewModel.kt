@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.data.repository.DonationRepository
 import com.example.reserve.data.repository.FoodRequestRepository
+import com.example.reserve.data.util.FirebaseHelper
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,7 @@ class MyRequestsViewModel : ViewModel() {
                 fetchDonationNames(requests.map { it.donationId }.distinct())
             },
             onError = { error ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = error.message) }
+                _uiState.update { it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(error)) }
             }
         )
     }
@@ -61,9 +62,17 @@ class MyRequestsViewModel : ViewModel() {
                         }
                     }
                 },
-                onFailure = { }
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(updateMessage = "Could not load donation name: ${FirebaseHelper.mapFirebaseError(exception)}")
+                    }
+                }
             )
         }
+    }
+
+    fun clearUpdateMessage() {
+        _uiState.update { it.copy(updateMessage = null) }
     }
 
     fun retry() {

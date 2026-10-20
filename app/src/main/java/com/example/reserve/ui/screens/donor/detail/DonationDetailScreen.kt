@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -48,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.reserve.data.model.Donation
 import com.example.reserve.data.model.DonationStatus
+import com.example.reserve.data.model.FoodRequest
+import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
 import com.example.reserve.ui.components.ReserveCard
@@ -112,9 +115,12 @@ fun DonationDetailScreen(
             uiState.donation != null -> {
                 DonationDetailContent(
                     donation = uiState.donation!!,
+                    incomingRequests = uiState.incomingRequests,
                     isUpdating = uiState.isUpdating,
                     onCancel = { donationDetailViewModel.cancelDonation() },
                     onMarkCompleted = { donationDetailViewModel.markCompleted() },
+                    onApproveRequest = { donationDetailViewModel.approveRequest(it) },
+                    onRejectRequest = { donationDetailViewModel.rejectRequest(it) },
                     modifier = Modifier.padding(paddingValues)
                 )
             }
@@ -125,9 +131,12 @@ fun DonationDetailScreen(
 @Composable
 private fun DonationDetailContent(
     donation: Donation,
+    incomingRequests: List<FoodRequest>,
     isUpdating: Boolean,
     onCancel: () -> Unit,
     onMarkCompleted: () -> Unit,
+    onApproveRequest: (FoodRequest) -> Unit,
+    onRejectRequest: (FoodRequest) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -221,6 +230,36 @@ private fun DonationDetailContent(
             }
         }
 
+        // Incoming Requests
+        val hasRequests = incomingRequests.isNotEmpty()
+        val expectsRequests = donation.status == DonationStatus.REQUESTED.name ||
+            donation.status == DonationStatus.APPROVED.name
+
+        if (hasRequests) {
+            IncomingRequestsSection(
+                requests = incomingRequests,
+                isUpdating = isUpdating,
+                onApprove = onApproveRequest,
+                onReject = onRejectRequest
+            )
+        } else if (expectsRequests) {
+            ReserveCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.People,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Loading incoming requests...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+
         // Actions
         val canCancel = donation.status == DonationStatus.AVAILABLE.name
         val canComplete = donation.status == DonationStatus.COLLECTED.name ||
@@ -253,6 +292,124 @@ private fun DonationDetailContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun IncomingRequestsSection(
+    requests: List<FoodRequest>,
+    isUpdating: Boolean,
+    onApprove: (FoodRequest) -> Unit,
+    onReject: (FoodRequest) -> Unit
+) {
+    ReserveCard {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.People,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Incoming Requests",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Text(
+                    text = "${requests.size}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            HorizontalDivider()
+            val pendingCount = requests.count { it.status == RequestStatus.PENDING.name }
+            requests.forEachIndexed { index, request ->
+                RequestItem(
+                    request = request,
+                    label = if (requests.size > 1) "Request ${index + 1}" else "NGO Request",
+                    isUpdating = isUpdating,
+                    onApprove = { onApprove(request) },
+                    onReject = { onReject(request) }
+                )
+                if (index < requests.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
+            }
+            if (pendingCount > 1) {
+                Text(
+                    text = "$pendingCount requests awaiting your decision",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RequestItem(
+    request: FoodRequest,
+    label: String,
+    isUpdating: Boolean,
+    onApprove: () -> Unit,
+    onReject: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+            StatusBadge(status = request.status)
+        }
+
+        if (request.requestTime > 0) {
+            Text(
+                text = "Requested: ${formatTimestamp(request.requestTime)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        if (request.status == RequestStatus.PENDING.name) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ReservePrimaryButton(
+                    text = "Approve",
+                    onClick = onApprove,
+                    isLoading = isUpdating,
+                    modifier = Modifier.weight(1f)
+                )
+                ReserveOutlinedButton(
+                    text = "Reject",
+                    onClick = onReject,
+                    enabled = !isUpdating,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
     }
 }
 

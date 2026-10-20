@@ -7,6 +7,7 @@ import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.FoodType
 import com.example.reserve.data.repository.DonationRepository
 import com.example.reserve.data.repository.StorageRepository
+import com.example.reserve.data.util.ErrorMapper
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -78,7 +79,7 @@ class AddDonationViewModel : ViewModel() {
                         it.copy(
                             isLoading = false,
                             isUploadingImage = false,
-                            errorMessage = "Image upload failed: ${exception.message}"
+                            errorMessage = ErrorMapper.imageUploadError(exception)
                         )
                     }
                 }
@@ -111,7 +112,7 @@ class AddDonationViewModel : ViewModel() {
             },
             onFailure = { exception ->
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = exception.message ?: "Failed to create donation")
+                    it.copy(isLoading = false, errorMessage = ErrorMapper.donationError("create", exception))
                 }
             }
         )
