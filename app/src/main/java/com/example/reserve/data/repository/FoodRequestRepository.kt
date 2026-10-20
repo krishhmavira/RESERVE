@@ -74,7 +74,11 @@ class FoodRequestRepository {
             .whereEqualTo("ngoId", ngoId)
             .get()
             .addOnSuccessListener { snapshot ->
-                onResult(!snapshot.isEmpty)
+                val hasActiveRequest = snapshot.documents.any { doc ->
+                    val status = doc.getString("status")
+                    status != "REJECTED"
+                }
+                onResult(hasActiveRequest)
             }
             .addOnFailureListener { onFailure(it) }
     }
