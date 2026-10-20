@@ -188,7 +188,20 @@ private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> U
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = when (request.status) {
+                            RequestStatus.PENDING.name -> "Awaiting donor response"
+                            RequestStatus.APPROVED.name -> "Approved — arrange pickup"
+                            RequestStatus.COLLECTED.name -> "Food collected"
+                            RequestStatus.COMPLETED.name -> "Completed"
+                            RequestStatus.REJECTED.name -> "Declined"
+                            else -> request.status.replace("_", " ")
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = formatTimestamp(request.requestTime),
                         style = MaterialTheme.typography.labelSmall,

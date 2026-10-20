@@ -147,11 +147,30 @@ fun DonorHomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Recent Donations",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primaryContainer,
+                                            MaterialTheme.shapes.small
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Fastfood,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Recent Donations",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             if (uiState.recentDonations.isNotEmpty()) {
                                 TextButton(onClick = onNavigateToMyDonations) {
                                     Text("View All")
@@ -164,9 +183,9 @@ fun DonorHomeScreen(
                         item {
                             EmptyStateView(
                                 title = "No donations yet",
-                                message = "Tap + to donate your first meal",
+                                message = "Tap the + button to share your first meal with the community",
                                 icon = Icons.Outlined.VolunteerActivism,
-                                modifier = Modifier.height(280.dp)
+                                modifier = Modifier.height(220.dp)
                             )
                         }
                     } else {
@@ -190,16 +209,23 @@ fun DonorHomeScreen(
 private fun GreetingSection(userName: String) {
     Column {
         Text(
-            text = if (userName.isNotBlank()) "Hello, ${userName.split(" ").first()}!" else "Hello!",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            text = if (userName.isNotBlank()) "Welcome back," else "Welcome!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        if (userName.isNotBlank()) {
+            Text(
+                text = userName.split(" ").first(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Share your surplus food with those in need",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
