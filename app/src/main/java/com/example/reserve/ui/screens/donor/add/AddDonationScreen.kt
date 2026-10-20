@@ -50,11 +50,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.reserve.data.model.FoodType
+import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.ReservePrimaryButton
 import com.example.reserve.ui.components.ReserveTextField
 
@@ -115,7 +117,14 @@ fun AddDonationScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Image picker
+            Text(
+                text = "Food Photo",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -169,6 +178,16 @@ fun AddDonationScreen(
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Food Information",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp)
+            )
 
             ReserveTextField(
                 value = uiState.foodName,
@@ -232,6 +251,16 @@ fun AddDonationScreen(
                 leadingIcon = Icons.Outlined.Description,
                 singleLine = false,
                 maxLines = 3
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Pickup & Timing",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = 4.dp)
             )
 
             ReserveTextField(

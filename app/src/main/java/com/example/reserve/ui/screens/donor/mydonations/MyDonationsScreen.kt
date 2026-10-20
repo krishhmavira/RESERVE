@@ -105,15 +105,23 @@ fun MyDonationsScreen(
                 uiState.filteredDonations.isEmpty() -> EmptyStateView(
                     title = "No donations found",
                     message = if (uiState.selectedFilter == "ALL")
-                        "You haven't made any donations yet"
+                        "You haven't made any donations yet. Tap the + button on the home screen to add your first donation."
                     else
-                        "No ${uiState.selectedFilter.replace("_", " ").lowercase()} donations",
+                        "No ${uiState.selectedFilter.replace("_", " ").lowercase()} donations found",
                     icon = Icons.Outlined.VolunteerActivism
                 )
                 else -> LazyColumn(
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    item {
+                        Text(
+                            text = "${uiState.filteredDonations.size} donation${if (uiState.filteredDonations.size != 1) "s" else ""}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                     items(
                         items = uiState.filteredDonations,
                         key = { it.donationId }
