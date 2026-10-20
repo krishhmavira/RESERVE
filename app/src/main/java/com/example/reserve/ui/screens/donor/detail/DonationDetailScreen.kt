@@ -329,9 +329,11 @@ private fun IncomingRequestsSection(
                 )
             }
             HorizontalDivider()
+            val pendingCount = requests.count { it.status == RequestStatus.PENDING.name }
             requests.forEachIndexed { index, request ->
                 RequestItem(
                     request = request,
+                    label = if (requests.size > 1) "Request ${index + 1}" else "NGO Request",
                     isUpdating = isUpdating,
                     onApprove = { onApprove(request) },
                     onReject = { onReject(request) }
@@ -343,6 +345,13 @@ private fun IncomingRequestsSection(
                     )
                 }
             }
+            if (pendingCount > 1) {
+                Text(
+                    text = "$pendingCount requests awaiting your decision",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
     }
 }
@@ -350,6 +359,7 @@ private fun IncomingRequestsSection(
 @Composable
 private fun RequestItem(
     request: FoodRequest,
+    label: String,
     isUpdating: Boolean,
     onApprove: () -> Unit,
     onReject: () -> Unit
@@ -366,7 +376,7 @@ private fun RequestItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "NGO Request",
+                text = label,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium
             )
