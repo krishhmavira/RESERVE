@@ -231,13 +231,33 @@ private fun DonationDetailContent(
         }
 
         // Incoming Requests
-        if (incomingRequests.isNotEmpty()) {
+        val hasRequests = incomingRequests.isNotEmpty()
+        val expectsRequests = donation.status == DonationStatus.REQUESTED.name ||
+            donation.status == DonationStatus.APPROVED.name
+
+        if (hasRequests) {
             IncomingRequestsSection(
                 requests = incomingRequests,
                 isUpdating = isUpdating,
                 onApprove = onApproveRequest,
                 onReject = onRejectRequest
             )
+        } else if (expectsRequests) {
+            ReserveCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.People,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = "Loading incoming requests...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
 
         // Actions
@@ -309,13 +329,19 @@ private fun IncomingRequestsSection(
                 )
             }
             HorizontalDivider()
-            requests.forEach { request ->
+            requests.forEachIndexed { index, request ->
                 RequestItem(
                     request = request,
                     isUpdating = isUpdating,
                     onApprove = { onApprove(request) },
                     onReject = { onReject(request) }
                 )
+                if (index < requests.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
+                }
             }
         }
     }
