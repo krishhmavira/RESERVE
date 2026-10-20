@@ -166,11 +166,30 @@ fun NgoHomeScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Available Now",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.tertiaryContainer,
+                                            MaterialTheme.shapes.small
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Fastfood,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                        tint = MaterialTheme.colorScheme.tertiary
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Available Now",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                             if (uiState.recentAvailable.isNotEmpty()) {
                                 TextButton(onClick = onNavigateToBrowseFood) {
                                     Text("View All")
@@ -183,9 +202,9 @@ fun NgoHomeScreen(
                         item {
                             EmptyStateView(
                                 title = "No food available right now",
-                                message = "Check back soon for new donations",
+                                message = "New donations appear here automatically. Check back soon!",
                                 icon = Icons.Outlined.Fastfood,
-                                modifier = Modifier.height(200.dp)
+                                modifier = Modifier.height(220.dp)
                             )
                         }
                     } else {
@@ -209,16 +228,23 @@ fun NgoHomeScreen(
 private fun GreetingSection(userName: String) {
     Column {
         Text(
-            text = if (userName.isNotBlank()) "Hello, ${userName.split(" ").first()}!" else "Hello!",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            text = if (userName.isNotBlank()) "Welcome back," else "Welcome!",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        if (userName.isNotBlank()) {
+            Text(
+                text = userName.split(" ").first(),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = "Find food. Serve communities.",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
