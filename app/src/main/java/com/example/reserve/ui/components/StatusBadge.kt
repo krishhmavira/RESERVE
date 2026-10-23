@@ -16,6 +16,7 @@ fun StatusBadge(
     modifier: Modifier = Modifier
 ) {
     val (backgroundColor, textColor) = statusColors(status)
+    val displayText = statusDisplayText(status)
 
     Surface(
         modifier = modifier,
@@ -23,13 +24,27 @@ fun StatusBadge(
         color = backgroundColor
     ) {
         Text(
-            text = status.replace("_", " "),
+            text = displayText,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
             color = textColor,
             letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing
         )
+    }
+}
+
+private fun statusDisplayText(status: String): String {
+    return when (status.uppercase()) {
+        "AVAILABLE" -> "Available"
+        "PENDING" -> "Pending"
+        "APPROVED" -> "Approved"
+        "REQUESTED" -> "Requested"
+        "COLLECTED" -> "Collected"
+        "COMPLETED" -> "Completed"
+        "REJECTED" -> "Declined"
+        "EXPIRED" -> "Expired"
+        else -> status.replace("_", " ")
     }
 }
 

@@ -14,6 +14,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -31,7 +32,11 @@ fun ReservePrimaryButton(
             .height(52.dp),
         enabled = enabled && !isLoading,
         shape = MaterialTheme.shapes.medium,
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp)
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 14.dp),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 2.dp,
+            pressedElevation = 4.dp
+        )
     ) {
         if (isLoading) {
             CircularProgressIndicator(
@@ -43,7 +48,8 @@ fun ReservePrimaryButton(
         }
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -69,7 +75,8 @@ fun ReserveOutlinedButton(
     ) {
         Text(
             text = text,
-            style = MaterialTheme.typography.labelLarge
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold
         )
     }
 }

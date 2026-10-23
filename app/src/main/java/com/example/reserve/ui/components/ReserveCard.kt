@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,13 +19,14 @@ fun ReserveCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentPadding: Dp = 16.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val cardModifier = modifier.fillMaxWidth()
     val colors = CardDefaults.cardColors(containerColor = containerColor)
-    val elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    val elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     val shape = MaterialTheme.shapes.large
-    val border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    val border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
 
     if (onClick != null) {
         Card(
@@ -35,7 +37,7 @@ fun ReserveCard(
             elevation = elevation,
             border = border
         ) {
-            Column(modifier = Modifier.padding(16.dp), content = content)
+            Column(modifier = Modifier.padding(contentPadding), content = content)
         }
     } else {
         Card(
@@ -45,7 +47,7 @@ fun ReserveCard(
             elevation = elevation,
             border = border
         ) {
-            Column(modifier = Modifier.padding(16.dp), content = content)
+            Column(modifier = Modifier.padding(contentPadding), content = content)
         }
     }
 }

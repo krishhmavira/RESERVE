@@ -1,5 +1,6 @@
 package com.example.reserve.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -63,12 +64,22 @@ fun EmptyStateView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.outlineVariant
-        )
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    MaterialTheme.shapes.extraLarge
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.outline
+            )
+        }
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = title,
@@ -100,12 +111,22 @@ fun ErrorStateView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = Icons.Outlined.ErrorOutline,
-            contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.error
-        )
+        Box(
+            modifier = Modifier
+                .size(80.dp)
+                .background(
+                    MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                    MaterialTheme.shapes.extraLarge
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.ErrorOutline,
+                contentDescription = null,
+                modifier = Modifier.size(40.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
         Spacer(modifier = Modifier.height(20.dp))
         Text(
             text = "Something went wrong",
