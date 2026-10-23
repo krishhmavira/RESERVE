@@ -156,18 +156,29 @@ class AuthViewModel : ViewModel() {
                     userRepository.getUserProfile(
                         userId = uid,
                         onSuccess = { user ->
-                            _currentUser.value = user
-                            _loginState.update { it.copy(isLoading = false) }
-                            viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                            if (user != null && user.role.isNotBlank()) {
+                                _currentUser.value = user
+                                _loginState.update { it.copy(isLoading = false) }
+                                viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                            } else {
+                                auth.signOut()
+                                _loginState.update {
+                                    it.copy(isLoading = false, errorMessage = "Account profile is incomplete. Please register again.")
+                                }
+                            }
                         },
-                        onFailure = {
-                            _loginState.update { it.copy(isLoading = false) }
-                            viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                        onFailure = { exception ->
+                            auth.signOut()
+                            _loginState.update {
+                                it.copy(isLoading = false, errorMessage = "Could not load profile. Please try again.")
+                            }
                         }
                     )
                 } else {
-                    _loginState.update { it.copy(isLoading = false) }
-                    viewModelScope.launch { _authEvent.emit(AuthEvent.LoginSuccess) }
+                    auth.signOut()
+                    _loginState.update {
+                        it.copy(isLoading = false, errorMessage = "Login failed. Please try again.")
+                    }
                 }
             }
             .addOnFailureListener { exception ->
@@ -275,6 +286,7 @@ class AuthViewModel : ViewModel() {
                         viewModelScope.launch { _authEvent.emit(AuthEvent.RegisterSuccess) }
                     },
                     onFailure = { exception ->
+                        auth.signOut()
                         _registerState.update {
                             it.copy(
                                 isLoading = false,
@@ -389,6 +401,9 @@ class AuthViewModel : ViewModel() {
         auth.signOut()
         _currentUser.value = null
         _authCheckState.value = AuthCheckState.NotAuthenticated
+        _loginState.value = LoginUiState()
+        _registerState.value = RegisterUiState()
+        _forgotPasswordState.value = ForgotPasswordUiState()
     }
 
     // Helpers
