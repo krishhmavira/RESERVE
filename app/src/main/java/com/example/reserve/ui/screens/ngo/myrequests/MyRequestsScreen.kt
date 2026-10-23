@@ -18,11 +18,15 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material.icons.outlined.ThumbDown
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +43,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,7 +79,18 @@ fun MyRequestsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Requests") },
+                title = {
+                    Column {
+                        Text("My Requests")
+                        if (!uiState.isLoading && uiState.errorMessage == null) {
+                            Text(
+                                text = "${uiState.requests.size} total request${if (uiState.requests.size != 1) "s" else ""}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -94,20 +111,32 @@ fun MyRequestsScreen(
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(bottom = 4.dp)
             ) {
                 items(filters) { filter ->
                     FilterChip(
                         selected = uiState.selectedFilter == filter,
                         onClick = { myRequestsViewModel.setFilter(filter) },
-                        label = { Text(filter.replace("_", " ")) },
+                        label = {
+                            Text(
+                                text = if (filter == "ALL") "All" else filter.replace("_", " "),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            selectedContainerColor = MaterialTheme.colorScheme.primary,
+                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            labelColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
             }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(top = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
 
             when {
                 uiState.isLoading -> LoadingView()
@@ -127,8 +156,8 @@ fun MyRequestsScreen(
                     icon = Icons.Outlined.VolunteerActivism
                 )
                 else -> LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     item {
                         Text(
@@ -156,6 +185,8 @@ fun MyRequestsScreen(
 
 @Composable
 private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> Unit) {
+    val statusInfo = requestStatusInfo(request.status)
+
     ReserveCard(onClick = onClick) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -165,22 +196,22 @@ private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> U
             Row(modifier = Modifier.weight(1f)) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(48.dp)
                         .background(
-                            MaterialTheme.colorScheme.secondaryContainer,
+                            statusInfo.containerColor,
                             MaterialTheme.shapes.medium
                         ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Receipt,
+                        imageVector = statusInfo.icon,
                         contentDescription = null,
                         modifier = Modifier.size(24.dp),
-                        tint = MaterialTheme.colorScheme.secondary
+                        tint = statusInfo.iconColor
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = foodName,
                         style = MaterialTheme.typography.titleSmall,
@@ -188,20 +219,14 @@ private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> U
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = when (request.status) {
-                            RequestStatus.PENDING.name -> "Awaiting donor response"
-                            RequestStatus.APPROVED.name -> "Approved — arrange pickup"
-                            RequestStatus.COLLECTED.name -> "Food collected"
-                            RequestStatus.COMPLETED.name -> "Completed"
-                            RequestStatus.REJECTED.name -> "Declined"
-                            else -> request.status.replace("_", " ")
-                        },
+                        text = statusInfo.description,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = statusInfo.iconColor,
+                        fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = formatTimestamp(request.requestTime),
                         style = MaterialTheme.typography.labelSmall,
@@ -209,7 +234,58 @@ private fun RequestCard(request: FoodRequest, foodName: String, onClick: () -> U
                     )
                 }
             }
+            Spacer(modifier = Modifier.width(8.dp))
             StatusBadge(status = request.status)
         }
+    }
+}
+
+private data class RequestStatusDisplayInfo(
+    val icon: ImageVector,
+    val description: String,
+    val containerColor: Color,
+    val iconColor: Color
+)
+
+@Composable
+private fun requestStatusInfo(status: String): RequestStatusDisplayInfo {
+    val scheme = MaterialTheme.colorScheme
+    return when (status) {
+        RequestStatus.PENDING.name -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.HourglassEmpty,
+            description = "Awaiting donor response",
+            containerColor = scheme.secondaryContainer,
+            iconColor = scheme.secondary
+        )
+        RequestStatus.APPROVED.name -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.CheckCircle,
+            description = "Approved — arrange pickup",
+            containerColor = scheme.primaryContainer,
+            iconColor = scheme.primary
+        )
+        RequestStatus.COLLECTED.name -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.CheckCircle,
+            description = "Food collected",
+            containerColor = scheme.primaryContainer,
+            iconColor = scheme.primary
+        )
+        RequestStatus.COMPLETED.name -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.CheckCircle,
+            description = "Completed",
+            containerColor = scheme.tertiaryContainer,
+            iconColor = scheme.tertiary
+        )
+        RequestStatus.REJECTED.name -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.ThumbDown,
+            description = "Declined",
+            containerColor = scheme.errorContainer,
+            iconColor = scheme.error
+        )
+        else -> RequestStatusDisplayInfo(
+            icon = Icons.Outlined.Receipt,
+            description = status.replace("_", " "),
+            containerColor = scheme.surfaceVariant,
+            iconColor = scheme.onSurfaceVariant
+        )
     }
 }
