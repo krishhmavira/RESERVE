@@ -31,8 +31,14 @@ class DonationDetailViewModel : ViewModel() {
         donationListener = donationRepository.listenToDonation(
             donationId = donationId,
             onUpdate = { donation ->
-                _uiState.update {
-                    it.copy(isLoading = false, donation = donation, errorMessage = null)
+                if (donation != null) {
+                    _uiState.update {
+                        it.copy(isLoading = false, donation = donation, errorMessage = null)
+                    }
+                } else {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = "Donation not found")
+                    }
                 }
             },
             onError = { exception ->
@@ -57,6 +63,11 @@ class DonationDetailViewModel : ViewModel() {
     }
 
     fun approveRequest(request: FoodRequest) {
+        if (request.status != RequestStatus.PENDING.name) {
+            _uiState.update { it.copy(updateMessage = "Only pending requests can be approved") }
+            return
+        }
+        if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
         foodRequestRepository.approveRequest(
             requestId = request.requestId,
@@ -75,6 +86,11 @@ class DonationDetailViewModel : ViewModel() {
     }
 
     fun rejectRequest(request: FoodRequest) {
+        if (request.status != RequestStatus.PENDING.name) {
+            _uiState.update { it.copy(updateMessage = "Only pending requests can be rejected") }
+            return
+        }
+        if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
         foodRequestRepository.rejectRequest(
             requestId = request.requestId,
@@ -94,6 +110,13 @@ class DonationDetailViewModel : ViewModel() {
 
     fun cancelDonation() {
         val donation = _uiState.value.donation ?: return
+        if (donation.status != DonationStatus.AVAILABLE.name
+            && donation.status != DonationStatus.REQUESTED.name
+        ) {
+            _uiState.update { it.copy(updateMessage = "This donation can no longer be cancelled") }
+            return
+        }
+        if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
         donationRepository.updateDonationStatus(
             donationId = donation.donationId,
@@ -113,6 +136,13 @@ class DonationDetailViewModel : ViewModel() {
 
     fun markCompleted() {
         val donation = _uiState.value.donation ?: return
+        if (donation.status != DonationStatus.APPROVED.name
+            && donation.status != DonationStatus.COLLECTED.name
+        ) {
+            _uiState.update { it.copy(updateMessage = "Donation must be approved or collected first") }
+            return
+        }
+        if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
         donationRepository.updateDonationStatus(
             donationId = donation.donationId,

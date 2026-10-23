@@ -2,6 +2,7 @@ package com.example.reserve.data.repository
 
 import com.example.reserve.data.model.FoodRequest
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 
@@ -136,15 +137,22 @@ class FoodRequestRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val donationDoc = firestore.collection("donations").document(request.donationId)
         val docRef = requestsCollection.document()
         val toSave = request.copy(requestId = docRef.id)
-        val batch = firestore.batch()
-        batch.set(docRef, toSave)
-        batch.update(
-            firestore.collection("donations").document(request.donationId),
-            "status", donationStatus
-        )
-        batch.commit()
+
+        firestore.runTransaction { transaction ->
+            val donationSnapshot = transaction.get(donationDoc)
+            val currentStatus = donationSnapshot.getString("status")
+            if (currentStatus != "AVAILABLE") {
+                throw FirebaseFirestoreException(
+                    "Donation is no longer available",
+                    FirebaseFirestoreException.Code.ABORTED
+                )
+            }
+            transaction.set(docRef, toSave)
+            transaction.update(donationDoc, "status", donationStatus)
+        }
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
@@ -155,22 +163,34 @@ class FoodRequestRepository {
         onSuccess: () -> Unit,
         onFailure: (Exception) -> Unit
     ) {
+        val donationDoc = firestore.collection("donations").document(donationId)
+        val requestDoc = requestsCollection.document(requestId)
+
         requestsCollection
             .whereEqualTo("donationId", donationId)
             .get()
             .addOnSuccessListener { snapshot ->
-                val batch = firestore.batch()
-                batch.update(requestsCollection.document(requestId), "status", "APPROVED")
-                batch.update(
-                    firestore.collection("donations").document(donationId),
-                    "status", "APPROVED"
-                )
-                for (doc in snapshot.documents) {
-                    if (doc.id != requestId && doc.getString("status") == "PENDING") {
-                        batch.update(requestsCollection.document(doc.id), "status", "REJECTED")
+                firestore.runTransaction { transaction ->
+                    val reqSnapshot = transaction.get(requestDoc)
+                    val currentReqStatus = reqSnapshot.getString("status")
+                    if (currentReqStatus != "PENDING") {
+                        throw FirebaseFirestoreException(
+                            "Request is no longer pending",
+                            FirebaseFirestoreException.Code.ABORTED
+                        )
+                    }
+
+                    transaction.update(requestDoc, "status", "APPROVED")
+                    transaction.update(donationDoc, "status", "APPROVED")
+
+                    for (doc in snapshot.documents) {
+                        if (doc.id != requestId && doc.getString("status") == "PENDING") {
+                            transaction.update(
+                                requestsCollection.document(doc.id), "status", "REJECTED"
+                            )
+                        }
                     }
                 }
-                batch.commit()
                     .addOnSuccessListener { onSuccess() }
                     .addOnFailureListener { onFailure(it) }
             }
