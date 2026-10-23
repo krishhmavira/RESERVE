@@ -81,6 +81,7 @@ fun FoodDetailScreen(
     LaunchedEffect(uiState.requestSuccess) {
         if (uiState.requestSuccess) {
             snackbarHostState.showSnackbar("Food requested successfully!")
+            foodDetailViewModel.clearRequestSuccess()
         }
     }
 

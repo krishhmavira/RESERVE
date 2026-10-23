@@ -24,16 +24,33 @@ class FoodDetailViewModel : ViewModel() {
     val uiState: StateFlow<FoodDetailUiState> = _uiState.asStateFlow()
 
     private var donationListener: ListenerRegistration? = null
+    private var currentDonationId: String? = null
+    private var hasCheckedExistingRequest = false
 
     fun loadDonation(donationId: String) {
-        _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+        if (donationId == currentDonationId && _uiState.value.donation != null) return
+
+        currentDonationId = donationId
+        hasCheckedExistingRequest = false
+        _uiState.update {
+            it.copy(
+                isLoading = true,
+                errorMessage = null,
+                requestSuccess = false,
+                requestError = null,
+                alreadyRequested = false
+            )
+        }
 
         donationListener?.remove()
         donationListener = donationRepository.listenToDonation(
             donationId = donationId,
             onUpdate = { donation ->
                 _uiState.update { it.copy(isLoading = false, donation = donation, errorMessage = null) }
-                if (donation != null) checkExistingRequest(donationId)
+                if (donation != null && !hasCheckedExistingRequest) {
+                    hasCheckedExistingRequest = true
+                    checkExistingRequest(donationId)
+                }
             },
             onError = { exception ->
                 _uiState.update {
@@ -65,6 +82,13 @@ class FoodDetailViewModel : ViewModel() {
             _uiState.update { it.copy(requestError = "Not authenticated") }
             return
         }
+
+        if (_uiState.value.alreadyRequested) {
+            _uiState.update { it.copy(requestError = "You have already requested this donation") }
+            return
+        }
+
+        if (_uiState.value.isRequesting) return
 
         if (donation.status != DonationStatus.AVAILABLE.name) {
             _uiState.update { it.copy(requestError = "This donation is no longer available") }
@@ -103,6 +127,10 @@ class FoodDetailViewModel : ViewModel() {
 
     fun clearRequestError() {
         _uiState.update { it.copy(requestError = null) }
+    }
+
+    fun clearRequestSuccess() {
+        _uiState.update { it.copy(requestSuccess = false) }
     }
 
     override fun onCleared() {

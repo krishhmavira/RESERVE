@@ -56,15 +56,17 @@ class MyRequestsViewModel : ViewModel() {
             donationRepository.getDonation(
                 donationId = donationId,
                 onSuccess = { donation ->
-                    if (donation != null) {
-                        _uiState.update {
-                            it.copy(donationNames = it.donationNames + (donationId to donation.foodName))
-                        }
+                    val name = donation?.foodName ?: "Deleted donation"
+                    _uiState.update {
+                        it.copy(donationNames = it.donationNames + (donationId to name))
                     }
                 },
                 onFailure = { exception ->
                     _uiState.update {
-                        it.copy(updateMessage = "Could not load donation name: ${FirebaseHelper.mapFirebaseError(exception)}")
+                        it.copy(
+                            donationNames = it.donationNames + (donationId to "Unknown"),
+                            updateMessage = "Could not load donation name: ${FirebaseHelper.mapFirebaseError(exception)}"
+                        )
                     }
                 }
             )

@@ -1,7 +1,6 @@
 package com.example.reserve.ui.screens.ngo.requestdetail
 
 import androidx.lifecycle.ViewModel
-import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.RequestStatus
 import com.example.reserve.data.repository.DonationRepository
 import com.example.reserve.data.repository.FoodRequestRepository
@@ -22,6 +21,7 @@ class RequestDetailViewModel : ViewModel() {
 
     private var requestListener: ListenerRegistration? = null
     private var donationListener: ListenerRegistration? = null
+    private var currentDonationId: String? = null
 
     fun loadRequest(requestId: String) {
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -46,7 +46,9 @@ class RequestDetailViewModel : ViewModel() {
     }
 
     private fun listenToDonation(donationId: String) {
-        if (donationListener != null) return
+        if (donationId == currentDonationId && donationListener != null) return
+        currentDonationId = donationId
+        donationListener?.remove()
         donationListener = donationRepository.listenToDonation(
             donationId = donationId,
             onUpdate = { donation ->
@@ -65,6 +67,12 @@ class RequestDetailViewModel : ViewModel() {
 
     fun cancelRequest() {
         val request = _uiState.value.request ?: return
+        if (request.status != RequestStatus.PENDING.name) {
+            _uiState.update { it.copy(updateMessage = "Only pending requests can be cancelled") }
+            return
+        }
+        if (_uiState.value.isUpdating) return
+
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
 
         foodRequestRepository.rejectRequest(
