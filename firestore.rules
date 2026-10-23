@@ -62,7 +62,7 @@ service cloud.firestore {
       let from = resource.data.status;
       let to = request.resource.data.status;
       return (from == 'PENDING' && to in ['APPROVED', 'REJECTED'])
-          || (from == 'APPROVED' && to in ['COLLECTED', 'REJECTED'])
+          || (from == 'APPROVED' && to in ['COLLECTED', 'COMPLETED', 'REJECTED'])
           || (from == 'COLLECTED' && to == 'COMPLETED');
     }
   }

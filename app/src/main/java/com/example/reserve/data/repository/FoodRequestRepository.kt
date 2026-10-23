@@ -219,4 +219,60 @@ class FoodRequestRepository {
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { onFailure(it) }
     }
+
+    fun completeDonationAndRequest(
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val donationDoc = firestore.collection("donations").document(donationId)
+
+        requestsCollection
+            .whereEqualTo("donationId", donationId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                firestore.runTransaction { transaction ->
+                    transaction.update(donationDoc, "status", "COMPLETED")
+                    for (doc in snapshot.documents) {
+                        val status = doc.getString("status")
+                        if (status == "APPROVED" || status == "COLLECTED") {
+                            transaction.update(
+                                requestsCollection.document(doc.id), "status", "COMPLETED"
+                            )
+                        }
+                    }
+                }
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
+
+    fun cancelDonationAndRequests(
+        donationId: String,
+        onSuccess: () -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val donationDoc = firestore.collection("donations").document(donationId)
+
+        requestsCollection
+            .whereEqualTo("donationId", donationId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                firestore.runTransaction { transaction ->
+                    transaction.update(donationDoc, "status", "EXPIRED")
+                    for (doc in snapshot.documents) {
+                        val status = doc.getString("status")
+                        if (status == "PENDING" || status == "APPROVED") {
+                            transaction.update(
+                                requestsCollection.document(doc.id), "status", "REJECTED"
+                            )
+                        }
+                    }
+                }
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { onFailure(it) }
+            }
+            .addOnFailureListener { onFailure(it) }
+    }
 }

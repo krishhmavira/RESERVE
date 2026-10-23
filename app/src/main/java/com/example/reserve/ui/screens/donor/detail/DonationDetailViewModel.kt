@@ -118,9 +118,8 @@ class DonationDetailViewModel : ViewModel() {
         }
         if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
-        donationRepository.updateDonationStatus(
+        foodRequestRepository.cancelDonationAndRequests(
             donationId = donation.donationId,
-            status = DonationStatus.EXPIRED.name,
             onSuccess = {
                 _uiState.update {
                     it.copy(isUpdating = false, updateMessage = "Donation cancelled")
@@ -144,9 +143,8 @@ class DonationDetailViewModel : ViewModel() {
         }
         if (_uiState.value.isUpdating) return
         _uiState.update { it.copy(isUpdating = true, updateMessage = null) }
-        donationRepository.updateDonationStatus(
+        foodRequestRepository.completeDonationAndRequest(
             donationId = donation.donationId,
-            status = DonationStatus.COMPLETED.name,
             onSuccess = {
                 _uiState.update {
                     it.copy(isUpdating = false, updateMessage = "Donation marked as completed")
