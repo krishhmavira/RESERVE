@@ -17,15 +17,17 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material.icons.outlined.Category
-import androidx.compose.material.icons.outlined.Fastfood
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Fastfood
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -54,9 +56,9 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.reserve.data.model.DonationStatus
 import com.example.reserve.data.model.RequestStatus
+import com.example.reserve.ui.components.DetailRow
 import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
-import com.example.reserve.ui.components.DetailRow
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.ReserveOutlinedButton
 import com.example.reserve.ui.components.StatusBadge
@@ -116,72 +118,28 @@ fun RequestDetailScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Request status header
-                    ReserveCard {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = "Request Status",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = donation?.foodName ?: "Food Request",
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                            StatusBadge(status = request.status)
-                        }
-                        if (donation != null) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Donation Status",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                StatusBadge(status = donation.status)
-                            }
-                        }
-                    }
+                    // Status header card
+                    StatusHeaderCard(
+                        foodName = donation?.foodName ?: "Food Request",
+                        requestStatus = request.status,
+                        donationStatus = donation?.status
+                    )
+
+                    // Status context message
+                    StatusContextMessage(
+                        requestStatus = request.status,
+                        donationStatus = donation?.status
+                    )
 
                     // Request info
                     ReserveCard {
                         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.secondaryContainer,
-                                            MaterialTheme.shapes.medium
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Info,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.secondary
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = "Request Info",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
+                            SectionHeader(
+                                title = "Request Info",
+                                icon = Icons.Outlined.Info,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                iconColor = MaterialTheme.colorScheme.secondary
+                            )
                             HorizontalDivider()
                             DetailRow(Icons.Outlined.Schedule, "Requested", formatTimestamp(request.requestTime))
                             DetailRow(Icons.Outlined.Fastfood, "Status", request.status.replace("_", " "))
@@ -207,30 +165,12 @@ fun RequestDetailScreen(
 
                         ReserveCard {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.tertiaryContainer,
-                                                MaterialTheme.shapes.medium
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Fastfood,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.tertiary
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = "Food Details",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
+                                SectionHeader(
+                                    title = "Food Details",
+                                    icon = Icons.Outlined.Fastfood,
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    iconColor = MaterialTheme.colorScheme.tertiary
+                                )
                                 HorizontalDivider()
                                 DetailRow(Icons.Outlined.Category, "Food Type", donation.foodType.replace("_", " "))
                                 DetailRow(Icons.Outlined.Inventory2, "Quantity", donation.quantity)
@@ -244,32 +184,14 @@ fun RequestDetailScreen(
                     if (request.status == RequestStatus.PENDING.name) {
                         ReserveCard {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(36.dp)
-                                            .background(
-                                                MaterialTheme.colorScheme.errorContainer,
-                                                MaterialTheme.shapes.medium
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Close,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = "Actions",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                }
+                                SectionHeader(
+                                    title = "Actions",
+                                    icon = Icons.Outlined.Cancel,
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    iconColor = MaterialTheme.colorScheme.error
+                                )
                                 Text(
-                                    text = "You can cancel this request while it's still pending.",
+                                    text = "You can cancel this request while it's still pending. The donation will become available for others.",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -282,114 +204,6 @@ fun RequestDetailScreen(
                         }
                     }
 
-                    // Status messages
-                    when (request.status) {
-                        RequestStatus.PENDING.name -> {
-                            if (donation != null && donation.status != DonationStatus.REQUESTED.name) {
-                                ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
-                                    Row(verticalAlignment = Alignment.Top) {
-                                        Icon(
-                                            imageVector = Icons.Outlined.Warning,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(20.dp),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Text(
-                                            text = when (donation.status) {
-                                                DonationStatus.APPROVED.name ->
-                                                    "This donation has been approved for another request. Your request is still pending."
-                                                DonationStatus.EXPIRED.name ->
-                                                    "This donation has expired. Your request may no longer be fulfilled."
-                                                DonationStatus.COMPLETED.name ->
-                                                    "This donation has been completed."
-                                                else ->
-                                                    "The donation status has changed. Your request is still pending."
-                                            },
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                        RequestStatus.APPROVED.name -> {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "Your request has been approved! Please arrange pickup.",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-                        RequestStatus.COLLECTED.name -> {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "Food has been collected. Thank you!",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-                        RequestStatus.COMPLETED.name -> {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "This request has been completed. Thank you for serving the community!",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                }
-                            }
-                        }
-                        RequestStatus.REJECTED.name -> {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Close,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(20.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "This request was declined or cancelled.",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }
@@ -397,3 +211,171 @@ fun RequestDetailScreen(
     }
 }
 
+@Composable
+private fun StatusHeaderCard(
+    foodName: String,
+    requestStatus: String,
+    donationStatus: String?
+) {
+    val statusIcon = when (requestStatus) {
+        RequestStatus.PENDING.name -> Icons.Outlined.HourglassEmpty
+        RequestStatus.APPROVED.name, RequestStatus.COLLECTED.name, RequestStatus.COMPLETED.name ->
+            Icons.Outlined.CheckCircle
+        RequestStatus.REJECTED.name -> Icons.Outlined.Close
+        else -> Icons.Outlined.Info
+    }
+    val statusContainerColor = when (requestStatus) {
+        RequestStatus.PENDING.name -> MaterialTheme.colorScheme.secondaryContainer
+        RequestStatus.APPROVED.name, RequestStatus.COLLECTED.name -> MaterialTheme.colorScheme.primaryContainer
+        RequestStatus.COMPLETED.name -> MaterialTheme.colorScheme.tertiaryContainer
+        RequestStatus.REJECTED.name -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    ReserveCard(containerColor = statusContainerColor.copy(alpha = 0.5f)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(statusContainerColor, MaterialTheme.shapes.medium),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = statusIcon,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = foodName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    StatusBadge(status = requestStatus)
+                    if (donationStatus != null) {
+                        Text(
+                            text = "•",
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                        StatusBadge(status = donationStatus)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusContextMessage(
+    requestStatus: String,
+    donationStatus: String?
+) {
+    val message: String?
+    val icon: androidx.compose.ui.graphics.vector.ImageVector
+    val containerColor: androidx.compose.ui.graphics.Color
+    val contentColor: androidx.compose.ui.graphics.Color
+
+    when (requestStatus) {
+        RequestStatus.PENDING.name -> {
+            if (donationStatus != null && donationStatus != DonationStatus.REQUESTED.name) {
+                message = when (donationStatus) {
+                    DonationStatus.APPROVED.name ->
+                        "This donation has been approved for another request. Your request is still pending."
+                    DonationStatus.EXPIRED.name ->
+                        "This donation has expired. Your request may no longer be fulfilled."
+                    DonationStatus.COMPLETED.name ->
+                        "This donation has been completed."
+                    else ->
+                        "The donation status has changed. Your request is still pending."
+                }
+                icon = Icons.Outlined.Warning
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            } else return
+        }
+        RequestStatus.APPROVED.name -> {
+            message = "Your request has been approved! Please arrange pickup at the location shown below."
+            icon = Icons.Outlined.CheckCircle
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        }
+        RequestStatus.COLLECTED.name -> {
+            message = "Food has been collected. Thank you for serving the community!"
+            icon = Icons.Outlined.CheckCircle
+            containerColor = MaterialTheme.colorScheme.primaryContainer
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        }
+        RequestStatus.COMPLETED.name -> {
+            message = "This request has been completed successfully. Thank you!"
+            icon = Icons.Outlined.CheckCircle
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        }
+        RequestStatus.REJECTED.name -> {
+            message = "This request was declined or cancelled. You may browse other available donations."
+            icon = Icons.Outlined.Close
+            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f)
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        }
+        else -> return
+    }
+
+    ReserveCard(containerColor = containerColor) {
+        Row(verticalAlignment = Alignment.Top) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = contentColor
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = contentColor,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+@Composable
+private fun SectionHeader(
+    title: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    containerColor: androidx.compose.ui.graphics.Color,
+    iconColor: androidx.compose.ui.graphics.Color
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(containerColor, MaterialTheme.shapes.medium),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = iconColor
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}
