@@ -32,7 +32,11 @@ class MyRequestsViewModel : ViewModel() {
     }
 
     private fun loadRequests() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            _uiState.update { it.copy(isLoading = false, errorMessage = "Not signed in") }
+            return
+        }
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
         listenerRegistration?.remove()

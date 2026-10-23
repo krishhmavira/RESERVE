@@ -196,9 +196,6 @@ fun ReserveNavGraph(
                 donationId = detail.donationId,
                 onNavigateBack = {
                     navController.popBackStack()
-                },
-                onRequestSuccess = {
-                    navController.popBackStack()
                 }
             )
         }

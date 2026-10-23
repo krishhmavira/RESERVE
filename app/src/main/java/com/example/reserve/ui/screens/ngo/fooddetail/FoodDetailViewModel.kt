@@ -46,10 +46,14 @@ class FoodDetailViewModel : ViewModel() {
         donationListener = donationRepository.listenToDonation(
             donationId = donationId,
             onUpdate = { donation ->
-                _uiState.update { it.copy(isLoading = false, donation = donation, errorMessage = null) }
-                if (donation != null && !hasCheckedExistingRequest) {
-                    hasCheckedExistingRequest = true
-                    checkExistingRequest(donationId)
+                if (donation != null) {
+                    _uiState.update { it.copy(isLoading = false, donation = donation, errorMessage = null) }
+                    if (!hasCheckedExistingRequest) {
+                        hasCheckedExistingRequest = true
+                        checkExistingRequest(donationId)
+                    }
+                } else {
+                    _uiState.update { it.copy(isLoading = false, errorMessage = "Donation not found") }
                 }
             },
             onError = { exception ->

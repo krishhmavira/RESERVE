@@ -74,7 +74,6 @@ import com.example.reserve.ui.components.formatTimestamp
 fun FoodDetailScreen(
     donationId: String,
     onNavigateBack: () -> Unit,
-    onRequestSuccess: () -> Unit,
     foodDetailViewModel: FoodDetailViewModel = viewModel()
 ) {
     val uiState by foodDetailViewModel.uiState.collectAsState()
