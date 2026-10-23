@@ -16,17 +16,22 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Fastfood
+import androidx.compose.material.icons.outlined.Inbox
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.VolunteerActivism
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -49,6 +54,7 @@ import com.example.reserve.ui.components.ErrorStateView
 import com.example.reserve.ui.components.LoadingView
 import com.example.reserve.ui.components.ReserveCard
 import com.example.reserve.ui.components.StatusBadge
+import com.example.reserve.ui.components.formatTimestamp
 import com.example.reserve.ui.screens.auth.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -123,99 +129,206 @@ fun NgoHomeScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    contentPadding = PaddingValues(bottom = 24.dp),
+                    verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
+                    // Hero greeting section
                     item {
-                        GreetingSection(userName = uiState.userName)
-                    }
-
-                    item {
-                        StatsRow(
-                            available = uiState.availableCount,
-                            requests = uiState.myRequestsCount,
-                            approved = uiState.approvedCount
+                        HeroSection(
+                            userName = uiState.userName,
+                            availableCount = uiState.availableCount
                         )
                     }
 
+                    // Stats dashboard
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            ActionCard(
-                                title = "Browse Food",
-                                subtitle = "${uiState.availableCount} available",
-                                icon = Icons.Outlined.Search,
-                                onClick = onNavigateToBrowseFood,
-                                modifier = Modifier.weight(1f)
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = "Overview",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp)
                             )
-                            ActionCard(
-                                title = "My Requests",
-                                subtitle = "${uiState.myRequestsCount} total",
-                                icon = Icons.Outlined.VolunteerActivism,
-                                onClick = onNavigateToMyRequests,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                StatCard(
+                                    label = "Available",
+                                    value = uiState.availableCount.toString(),
+                                    icon = Icons.Outlined.Fastfood,
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    accentColor = MaterialTheme.colorScheme.tertiary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatCard(
+                                    label = "Requests",
+                                    value = uiState.myRequestsCount.toString(),
+                                    icon = Icons.Outlined.Inbox,
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    accentColor = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatCard(
+                                    label = "Approved",
+                                    value = uiState.approvedCount.toString(),
+                                    icon = Icons.Outlined.CheckCircle,
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    accentColor = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
                         }
                     }
 
+                    // Quick actions
                     item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(32.dp)
-                                        .background(
-                                            MaterialTheme.colorScheme.tertiaryContainer,
-                                            MaterialTheme.shapes.small
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Fastfood,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = MaterialTheme.colorScheme.tertiary
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = "Available Now",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Text(
+                                text = "Quick Actions",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                QuickActionCard(
+                                    title = "Browse Food",
+                                    subtitle = "${uiState.availableCount} available now",
+                                    icon = Icons.Outlined.Search,
+                                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                    iconColor = MaterialTheme.colorScheme.tertiary,
+                                    onClick = onNavigateToBrowseFood,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                QuickActionCard(
+                                    title = "My Requests",
+                                    subtitle = "${uiState.myRequestsCount} total",
+                                    icon = Icons.Outlined.VolunteerActivism,
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                    iconColor = MaterialTheme.colorScheme.secondary,
+                                    onClick = onNavigateToMyRequests,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
-                            if (uiState.recentAvailable.isNotEmpty()) {
-                                TextButton(onClick = onNavigateToBrowseFood) {
-                                    Text("View All")
+                        }
+                    }
+
+                    // Available now header
+                    item {
+                        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .background(
+                                                MaterialTheme.colorScheme.tertiaryContainer,
+                                                MaterialTheme.shapes.medium
+                                            ),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Fastfood,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(20.dp),
+                                            tint = MaterialTheme.colorScheme.tertiary
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column {
+                                        Text(
+                                            text = "Available Now",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "${uiState.recentAvailable.size} donation${if (uiState.recentAvailable.size != 1) "s" else ""} near you",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                                if (uiState.recentAvailable.isNotEmpty()) {
+                                    TextButton(onClick = onNavigateToBrowseFood) {
+                                        Text("View All")
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Icon(
+                                            Icons.AutoMirrored.Outlined.ArrowForward,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
                                 }
                             }
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
 
                     if (uiState.recentAvailable.isEmpty()) {
                         item {
-                            EmptyStateView(
-                                title = "No food available right now",
-                                message = "New donations appear here automatically. Check back soon!",
-                                icon = Icons.Outlined.Fastfood,
-                                modifier = Modifier.height(220.dp)
-                            )
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                ReserveCard(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                                ) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 24.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Fastfood,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(48.dp),
+                                            tint = MaterialTheme.colorScheme.outlineVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        Text(
+                                            text = "No food available right now",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            text = "New donations appear here automatically",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        FilledTonalButton(onClick = onNavigateToBrowseFood) {
+                                            Text("Browse All Food")
+                                        }
+                                    }
+                                }
+                            }
                         }
                     } else {
                         items(
                             items = uiState.recentAvailable,
                             key = { it.donationId }
                         ) { donation ->
-                            AvailableDonationCard(
-                                donation = donation,
-                                onClick = { onNavigateToFoodDetail(donation.donationId) }
-                            )
+                            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                                AvailableDonationCard(
+                                    donation = donation,
+                                    onClick = { onNavigateToFoodDetail(donation.donationId) }
+                                )
+                            }
                         }
                     }
                 }
@@ -225,60 +338,46 @@ fun NgoHomeScreen(
 }
 
 @Composable
-private fun GreetingSection(userName: String) {
-    Column {
-        Text(
-            text = if (userName.isNotBlank()) "Welcome back," else "Welcome!",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        if (userName.isNotBlank()) {
-            Text(
-                text = userName.split(" ").first(),
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Find food. Serve communities.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun StatsRow(available: Int, requests: Int, approved: Int) {
-    Row(
+private fun HeroSection(userName: String, availableCount: Int) {
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
     ) {
-        StatCard(
-            label = "Available",
-            value = available.toString(),
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-            textColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            valueColor = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.weight(1f)
-        )
-        StatCard(
-            label = "Requests",
-            value = requests.toString(),
-            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            textColor = MaterialTheme.colorScheme.onSecondaryContainer,
-            valueColor = MaterialTheme.colorScheme.secondary,
-            modifier = Modifier.weight(1f)
-        )
-        StatCard(
-            label = "Approved",
-            value = approved.toString(),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            textColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            valueColor = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.weight(1f)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp)
+        ) {
+            Text(
+                text = if (userName.isNotBlank()) "Welcome back," else "Welcome!",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (userName.isNotBlank()) {
+                Text(
+                    text = userName.split(" ").first(),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            ) {
+                Text(
+                    text = if (availableCount > 0)
+                        "$availableCount donation${if (availableCount != 1) "s" else ""} available to rescue"
+                    else
+                        "Find food. Serve communities.",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                )
+            }
+        }
     }
 }
 
@@ -286,45 +385,59 @@ private fun StatsRow(available: Int, requests: Int, approved: Int) {
 private fun StatCard(
     label: String,
     value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     containerColor: androidx.compose.ui.graphics.Color,
-    textColor: androidx.compose.ui.graphics.Color,
-    valueColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    accentColor: androidx.compose.ui.graphics.Color,
     modifier: Modifier = Modifier
 ) {
     ReserveCard(modifier = modifier, containerColor = containerColor) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = accentColor
+            )
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
                 text = value,
-                style = MaterialTheme.typography.headlineMedium,
+                style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
-                color = valueColor
+                color = accentColor
             )
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                color = textColor
+                color = contentColor
             )
         }
     }
 }
 
 @Composable
-private fun ActionCard(
+private fun QuickActionCard(
     title: String,
     subtitle: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
+    containerColor: androidx.compose.ui.graphics.Color,
+    contentColor: androidx.compose.ui.graphics.Color,
+    iconColor: androidx.compose.ui.graphics.Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    ReserveCard(onClick = onClick, modifier = modifier) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+    ReserveCard(onClick = onClick, modifier = modifier, containerColor = containerColor) {
+        Column {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
+                    .size(40.dp)
                     .background(
-                        MaterialTheme.colorScheme.primaryContainer,
+                        iconColor.copy(alpha = 0.15f),
                         MaterialTheme.shapes.medium
                     ),
                 contentAlignment = Alignment.Center
@@ -332,23 +445,23 @@ private fun ActionCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    modifier = Modifier.size(22.dp),
+                    tint = iconColor
                 )
             }
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = contentColor
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = contentColor.copy(alpha = 0.7f)
+            )
         }
     }
 }
@@ -364,7 +477,7 @@ private fun AvailableDonationCard(donation: Donation, onClick: () -> Unit) {
             Row(modifier = Modifier.weight(1f)) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(48.dp)
                         .background(
                             MaterialTheme.colorScheme.tertiaryContainer,
                             MaterialTheme.shapes.medium
@@ -379,7 +492,7 @@ private fun AvailableDonationCard(donation: Donation, onClick: () -> Unit) {
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = donation.foodName,
                         style = MaterialTheme.typography.titleSmall,
@@ -387,14 +500,14 @@ private fun AvailableDonationCard(donation: Donation, onClick: () -> Unit) {
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = "${donation.foodType.replace("_", " ")} • Qty: ${donation.quantity}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (donation.pickupLocation.isNotBlank()) {
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
                             text = donation.pickupLocation,
                             style = MaterialTheme.typography.bodySmall,
@@ -403,8 +516,15 @@ private fun AvailableDonationCard(donation: Donation, onClick: () -> Unit) {
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatTimestamp(donation.createdAt),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
                 }
             }
+            Spacer(modifier = Modifier.width(8.dp))
             StatusBadge(status = donation.status)
         }
     }
