@@ -19,7 +19,9 @@ data class BrowseFoodUiState(
                 val query = searchQuery.lowercase()
                 result = result.filter { donation ->
                     donation.foodName.lowercase().contains(query) ||
-                        donation.pickupLocation.lowercase().contains(query)
+                        donation.pickupLocation.lowercase().contains(query) ||
+                        donation.description.lowercase().contains(query) ||
+                        donation.foodType.replace("_", " ").lowercase().contains(query)
                 }
             }
             return result

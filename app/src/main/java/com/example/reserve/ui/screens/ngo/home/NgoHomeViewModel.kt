@@ -23,6 +23,8 @@ class NgoHomeViewModel : ViewModel() {
 
     private var donationsListener: ListenerRegistration? = null
     private var requestsListener: ListenerRegistration? = null
+    private var donationsLoaded = false
+    private var requestsLoaded = false
 
     init {
         loadData()
@@ -33,51 +35,72 @@ class NgoHomeViewModel : ViewModel() {
     }
 
     private fun loadData() {
+        donationsLoaded = false
+        requestsLoaded = false
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         loadAvailableDonations()
         loadMyRequestStats()
+    }
+
+    private fun checkLoadingComplete() {
+        if (donationsLoaded && requestsLoaded) {
+            _uiState.update { it.copy(isLoading = false) }
+        }
     }
 
     private fun loadAvailableDonations() {
         donationsListener?.remove()
         donationsListener = donationRepository.listenToAvailableDonations(
             onUpdate = { donations ->
+                donationsLoaded = true
                 _uiState.update {
                     it.copy(
-                        isLoading = false,
                         availableCount = donations.size,
                         recentAvailable = donations.take(5),
                         errorMessage = null
                     )
                 }
+                checkLoadingComplete()
             },
             onError = { exception ->
+                donationsLoaded = true
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = FirebaseHelper.mapFirebaseError(exception))
+                    it.copy(errorMessage = FirebaseHelper.mapFirebaseError(exception))
                 }
+                checkLoadingComplete()
             }
         )
     }
 
     private fun loadMyRequestStats() {
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        if (uid == null) {
+            requestsLoaded = true
+            checkLoadingComplete()
+            return
+        }
         requestsListener?.remove()
         requestsListener = foodRequestRepository.listenToNgoRequests(
             ngoId = uid,
             onUpdate = { requests ->
+                requestsLoaded = true
                 val totalRequests = requests.size
                 val approved = requests.count { request ->
                     request.status == RequestStatus.APPROVED.name ||
+                        request.status == RequestStatus.COLLECTED.name ||
                         request.status == RequestStatus.COMPLETED.name
                 }
                 _uiState.update {
                     it.copy(myRequestsCount = totalRequests, approvedCount = approved)
                 }
+                checkLoadingComplete()
             },
             onError = { exception ->
+                requestsLoaded = true
                 _uiState.update {
                     it.copy(updateMessage = "Could not load request stats: ${FirebaseHelper.mapFirebaseError(exception)}")
                 }
+                checkLoadingComplete()
             }
         )
     }
