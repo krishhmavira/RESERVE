@@ -171,11 +171,13 @@ fun MyRequestsScreen(
                         items = uiState.filteredRequests,
                         key = { it.requestId }
                     ) { request ->
-                        RequestCard(
-                            request = request,
-                            foodName = uiState.donationNames[request.donationId] ?: "Loading...",
-                            onClick = { onNavigateToRequestDetail(request.requestId) }
-                        )
+                        Box(modifier = Modifier.animateItem()) {
+                            RequestCard(
+                                request = request,
+                                foodName = uiState.donationNames[request.donationId] ?: "Loading...",
+                                onClick = { onNavigateToRequestDetail(request.requestId) }
+                            )
+                        }
                     }
                 }
             }

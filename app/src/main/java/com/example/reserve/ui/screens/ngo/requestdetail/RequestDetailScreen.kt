@@ -1,5 +1,11 @@
 package com.example.reserve.ui.screens.ngo.requestdetail
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -181,7 +187,11 @@ fun RequestDetailScreen(
                     }
 
                     // Actions
-                    if (request.status == RequestStatus.PENDING.name) {
+                    AnimatedVisibility(
+                        visible = request.status == RequestStatus.PENDING.name,
+                        enter = fadeIn(tween(300)) + expandVertically(tween(300)),
+                        exit = fadeOut(tween(200)) + shrinkVertically(tween(200))
+                    ) {
                         ReserveCard {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 SectionHeader(

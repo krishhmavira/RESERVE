@@ -171,10 +171,12 @@ fun BrowseFoodScreen(
                         items = uiState.filteredDonations,
                         key = { it.donationId }
                     ) { donation ->
-                        FoodCard(
-                            donation = donation,
-                            onClick = { onNavigateToFoodDetail(donation.donationId) }
-                        )
+                        Box(modifier = Modifier.animateItem()) {
+                            FoodCard(
+                                donation = donation,
+                                onClick = { onNavigateToFoodDetail(donation.donationId) }
+                            )
+                        }
                     }
                 }
             }

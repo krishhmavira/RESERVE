@@ -323,7 +323,7 @@ fun NgoHomeScreen(
                             items = uiState.recentAvailable,
                             key = { it.donationId }
                         ) { donation ->
-                            Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                            Box(modifier = Modifier.animateItem().padding(horizontal = 16.dp, vertical = 4.dp)) {
                                 AvailableDonationCard(
                                     donation = donation,
                                     onClick = { onNavigateToFoodDetail(donation.donationId) }

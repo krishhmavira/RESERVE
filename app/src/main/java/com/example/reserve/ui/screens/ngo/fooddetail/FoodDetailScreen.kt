@@ -1,5 +1,11 @@
 package com.example.reserve.ui.screens.ngo.fooddetail
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -226,82 +232,94 @@ fun FoodDetailScreen(
                             }
                         }
 
-                        // CTA section
-                        if (donation.status == DonationStatus.AVAILABLE.name && !uiState.alreadyRequested) {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.VolunteerActivism,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(32.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = "This food is available for rescue",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        textAlign = TextAlign.Center
-                                    )
-                                    Spacer(modifier = Modifier.height(12.dp))
-                                    ReservePrimaryButton(
-                                        text = if (uiState.isRequesting) "Requesting..." else "Request This Food",
-                                        onClick = { foodDetailViewModel.requestFood() },
-                                        isLoading = uiState.isRequesting,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                        } else if (uiState.alreadyRequested) {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.CheckCircle,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = "Request Submitted",
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        // CTA section with animated transitions
+                        val ctaState = when {
+                            donation.status == DonationStatus.AVAILABLE.name && !uiState.alreadyRequested -> 0
+                            uiState.alreadyRequested -> 1
+                            else -> 2
+                        }
+                        AnimatedContent(
+                            targetState = ctaState,
+                            transitionSpec = {
+                                (fadeIn(tween(300)) + slideInVertically { it / 8 })
+                                    .togetherWith(fadeOut(tween(200)))
+                            },
+                            label = "cta"
+                        ) { state ->
+                            when (state) {
+                                0 -> ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)) {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.VolunteerActivism,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(32.dp),
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
+                                        Spacer(modifier = Modifier.height(8.dp))
                                         Text(
-                                            text = "You have already requested this donation. Check My Requests for updates.",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            text = "This food is available for rescue",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Spacer(modifier = Modifier.height(12.dp))
+                                        ReservePrimaryButton(
+                                            text = if (uiState.isRequesting) "Requesting..." else "Request This Food",
+                                            onClick = { foodDetailViewModel.requestFood() },
+                                            isLoading = uiState.isRequesting,
+                                            modifier = Modifier.fillMaxWidth()
                                         )
                                     }
                                 }
-                            }
-                        } else {
-                            ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Info,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = "No Longer Available",
-                                            style = MaterialTheme.typography.titleSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                1 -> ReserveCard(containerColor = MaterialTheme.colorScheme.primaryContainer) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.CheckCircle,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp),
+                                            tint = MaterialTheme.colorScheme.primary
                                         )
-                                        Text(
-                                            text = "This donation is no longer available for requests.",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = "Request Submitted",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                            Text(
+                                                text = "You have already requested this donation. Check My Requests for updates.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                    }
+                                }
+                                else -> ReserveCard(containerColor = MaterialTheme.colorScheme.surfaceVariant) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Info,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(24.dp),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column {
+                                            Text(
+                                                text = "No Longer Available",
+                                                style = MaterialTheme.typography.titleSmall,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = "This donation is no longer available for requests.",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
                                     }
                                 }
                             }
