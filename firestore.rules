@@ -4,11 +4,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // Users collection
+    // - Users can only read and write their own profile
+    // - Updates are restricted to safe fields (role, email, userId cannot be changed)
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId
                     && request.resource.data.userId == userId;
-      allow update: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['name', 'phone', 'address', 'profileImage']);
     }
 
     // Donations collection
@@ -35,7 +39,7 @@ service cloud.firestore {
     // - Single-document reads require the user to be the ngoId or donorId
     // - Query/list operations allowed for any authenticated user
     // - Only NGOs can create requests (ngoId must match auth uid)
-    // - Only involved parties can update (ngoId or donorId must match)
+    // - Updates restricted to status-only changes with valid transitions
     match /foodRequests/{requestId} {
       allow get: if request.auth != null
                  && (resource.data.ngoId == request.auth.uid
@@ -45,11 +49,21 @@ service cloud.firestore {
                     && request.resource.data.ngoId == request.auth.uid;
       allow update: if request.auth != null
                     && (resource.data.ngoId == request.auth.uid
-                        || resource.data.donorId == request.auth.uid);
+                        || resource.data.donorId == request.auth.uid)
+                    && onlyStatusChanged()
+                    && validRequestTransition();
     }
 
     function onlyStatusChanged() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+    }
+
+    function validRequestTransition() {
+      let from = resource.data.status;
+      let to = request.resource.data.status;
+      return (from == 'PENDING' && to in ['APPROVED', 'REJECTED'])
+          || (from == 'APPROVED' && to in ['COLLECTED', 'REJECTED'])
+          || (from == 'COLLECTED' && to == 'COMPLETED');
     }
   }
 }
