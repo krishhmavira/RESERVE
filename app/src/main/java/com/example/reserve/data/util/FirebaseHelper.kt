@@ -62,7 +62,7 @@ object FirebaseHelper {
                 message.contains("unauthorized", ignoreCase = true) ->
                 "Image upload not authorized. Please try again."
 
-            else -> "Something went wrong. Please try again."
+            else -> "Error: ${exception::class.simpleName}: $message"
         }
     }
 }
